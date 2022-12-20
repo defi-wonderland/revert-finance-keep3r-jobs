@@ -48,6 +48,7 @@
     "dotenv-cli": "5.1.0",
     "ds-test": "https://github.com/dapphub/ds-test.git#9310e879db8ba3ea6d5c6489a579118fd264a3f5",
     "forge-std": "https://github.com/foundry-rs/forge-std.git#2a2ce3692b8c1523b29de3ec9d961ee9fbbc43a6",
+    "keep3r-v2": "https://github.com/keep3r-network/keep3r-network-v2.git#a3b8e0f53e33297a826c98c80538a9351ed29efb",
     "openzeppelin-solidity": "https://github.com/openzeppelin/openzeppelin-contracts.git#b159b3fee29f6c4b5468f568856a37f78de03819"
   },
   "devDependencies": {
