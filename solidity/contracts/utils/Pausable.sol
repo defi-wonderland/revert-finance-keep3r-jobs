@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4 <0.9.0;
 
-import '@contracts/utils/Governable.sol';
+import 'keep3r/contracts/peripherals/Governable.sol';
 import '@interfaces/utils/IPausable.sol';
 
 /**

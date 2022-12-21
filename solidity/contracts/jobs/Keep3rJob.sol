@@ -2,7 +2,6 @@
 pragma solidity >=0.8.4 <0.9.0;
 
 import '@contracts/utils/Pausable.sol';
-import '@contracts/utils/Governable.sol';
 import '@interfaces/jobs/IKeep3rJob.sol';
 import 'uni-v3-periphery/libraries/OracleLibrary.sol';
 
@@ -22,12 +21,6 @@ abstract contract Keep3rJob is IKeep3rJob, Pausable {
   /// @inheritdoc IKeep3rJob
   uint256 public requiredAge;
 
-  /// @inheritdoc IKeep3rJob
-  uint256 public extraGas = 10_000;
-
-  /// @inheritdoc IKeep3rJob
-  uint256 public boost = 11_000;
-
   /**
     @notice The fixed point precision of the boost factor
    */
@@ -37,32 +30,6 @@ abstract contract Keep3rJob is IKeep3rJob, Pausable {
   function setKeep3r(IKeep3r _keep3r) public onlyGovernance {
     keep3r = _keep3r;
     emit Keep3rSet(_keep3r);
-  }
-
-  /// @inheritdoc IKeep3rJob
-  function setKeep3rRequirements(
-    IERC20 _bond,
-    uint256 _minBond,
-    uint256 _earnings,
-    uint256 _age
-  ) public onlyGovernance {
-    requiredBond = _bond;
-    requiredMinBond = _minBond;
-    requiredEarnings = _earnings;
-    requiredAge = _age;
-    emit Keep3rRequirementsSet(_bond, _minBond, _earnings, _age);
-  }
-
-  /// @inheritdoc IKeep3rJob
-  function setExtraGas(uint256 _extraGas) external onlyGovernance {
-    extraGas = _extraGas;
-    emit ExtraGasSet(_extraGas);
-  }
-
-  /// @inheritdoc IKeep3rJob
-  function setBoost(uint256 _boost) external onlyGovernance {
-    boost = _boost;
-    emit BoostSet(_boost);
   }
 
   /**
