@@ -1,0 +1,33 @@
+[profile.default]
+src = './solidity'
+test = './solidity/test'
+out = 'out'
+libraries = []
+cache = true
+force = false
+evm_version = 'london'
+gas_reports = ['*']
+auto_detect_solc = true
+optimizer = true
+optimizer_runs = 20000
+verbosity = 0
+ignored_error_codes = []
+fuzz_runs = 256
+ffi = false
+sender = '0x00a329c0648769a73afac7f9381e08fb43dbea72'
+tx_origin = '0x00a329c0648769a73afac7f9381e08fb43dbea72'
+initial_balance = '0xffffffffffffffffffffffff'
+block_number = 14126430
+gas_limit = 9223372036854775807
+gas_price = 100
+block_base_fee_per_gas = 100
+block_coinbase = '0x0000000000000000000000000000000000000000'
+block_timestamp = 1643802347
+block_difficulty = 0
+solc_version = '0.8.10'
+
+[profile.docs]
+src = './solidity/interfaces/'
+
+[rpc_endpoints]
+mainnet = "${MAINNET_RPC}"
