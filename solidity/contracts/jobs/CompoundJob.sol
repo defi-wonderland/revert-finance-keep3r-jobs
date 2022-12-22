@@ -32,21 +32,16 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
   function work(uint256 _tokenId) external upkeep(msg.sender) notPaused {
     idTokens memory _idTokens = tokenIdStored[_tokenId];
 
-    // If tokenId is already in our mapping
-    if (_idTokens.token0 > address(0)) {
-      _callAutoCompound(_tokenId, whiteList[_idTokens.token0], whiteList[_idTokens.token1]);
-    
-    // If not
-    } else {
+    if (_idTokens.token0 == address(0)) {
       (, , address token0, address token1, , , , , , , , ) = nonfungiblePositionManager.positions(_tokenId);
-      uint256 _threshold0 = whiteList[token0];
-      uint256 _threshold1 = whiteList[token1];
-      if (_threshold0 == 0 && _threshold1 == 0) revert CompoundJob_NotWhiteList();
-
       _idTokens = idTokens(token0, token1);
       tokenIdStored[_tokenId] = _idTokens;
-      _callAutoCompound(_tokenId, _threshold0, _threshold1);
     }
+    uint256 _threshold0 = whiteList[_idTokens.token0];
+    uint256 _threshold1 = whiteList[_idTokens.token1];
+    if (_threshold0 + _threshold1 == 0) revert CompoundJob_NotWhiteList();
+
+    _callAutoCompound(_tokenId, _threshold0, _threshold1);
   }
 
   /// @inheritdoc ICompoundJob
@@ -78,15 +73,13 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
     uint256 _reward1;
 
     // We have 2 tokens of interest
-    if (_threshold0 > 0 && _threshold1 > 0) {
+    if (_threshold0 * _threshold1 > 0) {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.NONE, true, true);
       (_reward0, _reward1, , ) = compoundor.autoCompound(_params);
       _reward0 = PRBMath.mulDiv(_reward0, BASE, _threshold0);
       _reward1 = PRBMath.mulDiv(_reward1, BASE, _threshold1);
       _smallCompound = BASE > (_reward0 + _reward1) * BASE;
-    }
-
-    if (_threshold0 > 0 && _threshold1 == 0) {
+    } else if (_threshold0 > 0) {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, true, true);
       (_reward0, , , ) = compoundor.autoCompound(_params);
       _smallCompound = _threshold0 > _reward0 * BASE;
