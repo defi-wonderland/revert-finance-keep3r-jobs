@@ -19,7 +19,7 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
   mapping(uint256 => idTokens) public tokenIdStored;
 
   /** 
-  @notice The base
+    @notice The base
   */
   uint256 public constant BASE = 10_000;
 
@@ -38,6 +38,10 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
     _work(_tokenId);
   }
 
+  /**
+    @notice Works for the keep3r or for external user
+    @param _tokenId The token id
+  */
   function _work(uint256 _tokenId) internal {
     idTokens memory _idTokens = tokenIdStored[_tokenId];
 
@@ -71,6 +75,12 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
     emit TokenAddedToWhiteList(_token, _threshold);
   }
 
+  /**
+    @notice Calls autocompound with the correct parameters
+    @param _tokenId The token id
+    @param _threshold0 The threshold for token0
+    @param _threshold1 The threshold for token1
+  */
   function _callAutoCompound(
     uint256 _tokenId,
     uint256 _threshold0,

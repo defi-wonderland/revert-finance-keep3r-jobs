@@ -11,7 +11,7 @@ interface ICompoundJob is IKeep3rJob {
   //////////////////////////////////////////////////////////////*/
 
   /**
-  @notice Emitted when job works
+    @notice Emitted when job works
   */
   event Worked();
 
@@ -39,12 +39,12 @@ interface ICompoundJob is IKeep3rJob {
   //////////////////////////////////////////////////////////////*/
 
   /**
-  @notice Thrown when the compounded amount it less than needed
+    @notice Thrown when the compounded amount it less than needed
   */
   error CompoundJob_SmallCompound();
 
   /**
-  @notice Thrown when the tokens are not in the whitelist
+    @notice Thrown when the tokens are not in the whitelist
   */
   error CompoundJob_NotWhiteList();
 
@@ -109,19 +109,19 @@ interface ICompoundJob is IKeep3rJob {
   */
   function workForFree(uint256 _tokenId) external;
 
-    /**
+  /**
     @notice Sets the address of the compoundor
     @param  _compoundor The address of the compoundor to be set
    */
   function setCompoundor(ICompoundor _compoundor) external;
 
-    /**
+  /**
     @notice Sets the address of the non fungible PositionManager
     @param  _nonfungiblePositionManager The address of the non fungible PositionManager to be set
    */
   function setNonfungiblePositionManager(INonfungiblePositionManager _nonfungiblePositionManager) external;
 
-    /**
+  /**
     @notice Sets the token that has to be whitelisted
     @param  _token The address of the token
     @param  _threshold The threshold
