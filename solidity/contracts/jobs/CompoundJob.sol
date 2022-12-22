@@ -30,6 +30,15 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
 
   /// @inheritdoc ICompoundJob
   function work(uint256 _tokenId) external upkeep(msg.sender) notPaused {
+    _work(_tokenId);
+  }
+
+  /// @inheritdoc ICompoundJob
+  function workForFree(uint256 _tokenId) external {
+    _work(_tokenId);
+  }
+
+  function _work(uint256 _tokenId) internal {
     idTokens memory _idTokens = tokenIdStored[_tokenId];
 
     if (_idTokens.token0 == address(0)) {
