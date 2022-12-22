@@ -93,7 +93,7 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
       _smallCompound = _threshold0 > _reward0 * BASE;
     } else {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_1, true, true);
-      (, _reward0, , ) = compoundor.autoCompound(_params);
+      (, _reward1, , ) = compoundor.autoCompound(_params);
       _smallCompound = _threshold1 > _reward1 * BASE;
     }
 
