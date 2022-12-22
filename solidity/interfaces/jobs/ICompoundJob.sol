@@ -10,7 +10,7 @@ interface ICompoundJob is IKeep3rJob {
                               EVENTS
   //////////////////////////////////////////////////////////////*/
 
-  event Worked(uint256 reward, uint256 compounded0, uint256 compounded1);
+  event Worked();
 
   event CompoundorSetted(ICompoundor _compoundor);
 
@@ -27,6 +27,15 @@ interface ICompoundJob is IKeep3rJob {
   error CompoundJob_NotWhiteList();
 
   /*///////////////////////////////////////////////////////////////
+                            STRUCTS
+  //////////////////////////////////////////////////////////////*/
+
+  struct idTokens {
+    address token0;
+    address token1;
+  }
+
+  /*///////////////////////////////////////////////////////////////
                             VARIABLES
   //////////////////////////////////////////////////////////////*/
 
@@ -36,7 +45,7 @@ interface ICompoundJob is IKeep3rJob {
 
   function whiteList(address) external view returns (uint256);
 
-  function tokenIdStored(uint256) external view returns (ICompoundor.RewardConversion);
+  function tokenIdStored(uint256) external view returns (address, address);
 
   /*///////////////////////////////////////////////////////////////
                               LOGIC

@@ -3,6 +3,7 @@ pragma solidity >=0.8.0 <0.9.0;
 
 import '@interfaces/jobs/ICompoundJob.sol';
 import '@contracts/jobs/Keep3rJob.sol';
+import '@contracts/utils/PRBMath.sol';
 
 contract CompoundJob is ICompoundJob, Keep3rJob {
   /// @inheritdoc ICompoundJob
@@ -15,12 +16,7 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
   mapping(address => uint256) public whiteList;
 
   /// @inheritdoc ICompoundJob
-  mapping(uint256 => ICompoundor.RewardConversion) public tokenIdStored;
-
-  /** 
-  @notice The weth address
-  */
-  address public constant WETH = 0x4200000000000000000000000000000000000006;
+  mapping(uint256 => idTokens) public tokenIdStored;
 
   /** 
   @notice The base to operate in 0.001
@@ -30,35 +26,26 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
   constructor(address _governance) payable Governable(_governance) {
     compoundor = ICompoundor(0x5411894842e610C4D0F6Ed4C232DA689400f94A1);
     nonfungiblePositionManager = INonfungiblePositionManager(address(0));
-    whiteList[WETH] = 1;
   }
 
   /// @inheritdoc ICompoundJob
   function work(uint256 _tokenId) external upkeep(msg.sender) notPaused {
-    uint256 threshold;
-    ICompoundor.RewardConversion _rewardConversion = tokenIdStored[_tokenId];
+    idTokens memory _idTokens = tokenIdStored[_tokenId];
 
-    (, , address token0, address token1, , , , , , , , ) = nonfungiblePositionManager.positions(_tokenId);
-
-    if (_rewardConversion == ICompoundor.RewardConversion.TOKEN_0 || _rewardConversion == ICompoundor.RewardConversion.TOKEN_1) {
-      threshold = _rewardConversion == ICompoundor.RewardConversion.TOKEN_0 ? whiteList[token0] : whiteList[token1];
-      _callAutoCompound(_tokenId, _rewardConversion, threshold);
-
-      // If not
+    // If tokenId is already in our mapping
+    if (_idTokens.token0 > address(0)) {
+      _callAutoCompound(_tokenId, whiteList[_idTokens.token0], whiteList[_idTokens.token1]);
+    
+    // If not
     } else {
-      if (whiteList[token0] == 0 || whiteList[token1] == 0) revert CompoundJob_NotWhiteList();
-      // If tokenId is already in our mapping
+      (, , address token0, address token1, , , , , , , , ) = nonfungiblePositionManager.positions(_tokenId);
+      uint256 _threshold0 = whiteList[token0];
+      uint256 _threshold1 = whiteList[token1];
+      if (_threshold0 == 0 || _threshold1 == 0) revert CompoundJob_NotWhiteList();
 
-      // If whiteList[token0] is greater than 0 the token in the whitelist is token0 and we should swap all rewards to token0
-      // If not we should swap all rewards to token1 which is the token in the whitelist
-      if (whiteList[token0] > 0) {
-        _rewardConversion = ICompoundor.RewardConversion.TOKEN_0;
-        threshold = whiteList[token0];
-      } else {
-        _rewardConversion = ICompoundor.RewardConversion.TOKEN_1;
-        threshold = whiteList[token1];
-      }
-      _callAutoCompound(_tokenId, _rewardConversion, threshold);
+      _idTokens = idTokens(token0, token1);
+      tokenIdStored[_tokenId] = _idTokens;
+      _callAutoCompound(_tokenId, _threshold0, _threshold1);
     }
   }
 
@@ -82,23 +69,35 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
 
   function _callAutoCompound(
     uint256 _tokenId,
-    ICompoundor.RewardConversion _rewardConversion,
-    uint256 threshold
+    uint256 _threshold0,
+    uint256 _threshold1
   ) internal {
-    uint256 _reward;
-    uint256 _compounded0;
-    uint256 _compounded1;
+    ICompoundor.AutoCompoundParams memory _params;
+    bool _smallCompound;
+    uint256 _reward0;
+    uint256 _reward1;
 
-    // first true to withdraw , second for swap in order to add max amount to the position
-    ICompoundor.AutoCompoundParams memory _params = ICompoundor.AutoCompoundParams(_tokenId, _rewardConversion, true, true);
-
-    if (_rewardConversion == ICompoundor.RewardConversion.TOKEN_0) {
-      (_reward, , _compounded0, _compounded1) = compoundor.autoCompound(_params);
-    } else {
-      (, _reward, _compounded0, _compounded1) = compoundor.autoCompound(_params);
+    // We have 2 tokens of interest
+    if (_threshold0 > 0 || _threshold1 > 0) {
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.NONE, true, true);
+      (_reward0, _reward1, , ) = compoundor.autoCompound(_params);
+      _reward0 = PRBMath.mulDiv(_reward0, BASE, _threshold0);
+      _reward1 = PRBMath.mulDiv(_reward1, BASE, _threshold1);
+      _smallCompound = BASE > (_reward0 + _reward1) * BASE;
+      if (BASE > (_reward0 + _reward1) * BASE) revert CompoundJob_SmallCompound();
     }
 
-    if (threshold > _reward * block.basefee * BASE) revert CompoundJob_SmallCompound();
-    emit Worked(_reward, _compounded0, _compounded1);
+    if (_threshold0 > 0) {
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, true, true);
+      (_reward0, , , ) = compoundor.autoCompound(_params);
+      _smallCompound = _threshold0 > _reward0 * BASE;
+    } else {
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_1, true, true);
+      (, _reward0, , ) = compoundor.autoCompound(_params);
+      _smallCompound = _threshold1 > _reward1 * BASE;
+    }
+
+    if (_smallCompound) revert CompoundJob_SmallCompound();
+    emit Worked();
   }
 }
