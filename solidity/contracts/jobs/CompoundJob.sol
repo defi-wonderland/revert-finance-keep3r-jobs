@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0 <0.9.0;
+pragma solidity >=0.8.4 <0.9.0;
 
 import '@interfaces/jobs/ICompoundJob.sol';
 import '@contracts/jobs/Keep3rJob.sol';
@@ -19,9 +19,9 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
   mapping(uint256 => idTokens) public tokenIdStored;
 
   /** 
-  @notice The base to operate in 0.001
+  @notice The base
   */
-  uint256 public constant BASE = 1000;
+  uint256 public constant BASE = 10_000;
 
   constructor(address _governance) payable Governable(_governance) {
     compoundor = ICompoundor(0x5411894842e610C4D0F6Ed4C232DA689400f94A1);
