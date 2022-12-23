@@ -4,6 +4,7 @@ pragma solidity >=0.8.4 <0.9.0;
 import '@interfaces/jobs/ICompoundJob.sol';
 import '@contracts/jobs/Keep3rJob.sol';
 import '@contracts/utils/PRBMath.sol';
+import 'forge-std/console.sol';
 
 contract CompoundJob is ICompoundJob, Keep3rJob {
   /// @inheritdoc ICompoundJob
@@ -23,9 +24,13 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
   */
   uint256 public constant BASE = 10_000;
 
-  constructor(address _governance) payable Governable(_governance) {
-    compoundor = ICompoundor(0x5411894842e610C4D0F6Ed4C232DA689400f94A1);
-    nonfungiblePositionManager = INonfungiblePositionManager(address(0));
+  constructor(
+    address _governance,
+    ICompoundor _compoundor,
+    INonfungiblePositionManager _nonfungiblePositionManager
+  ) payable Governable(_governance) {
+    compoundor = _compoundor;
+    nonfungiblePositionManager = _nonfungiblePositionManager;
   }
 
   /// @inheritdoc ICompoundJob
@@ -97,7 +102,7 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
       (_reward0, _reward1, , ) = compoundor.autoCompound(_params);
       _reward0 = PRBMath.mulDiv(_reward0, BASE, _threshold0);
       _reward1 = PRBMath.mulDiv(_reward1, BASE, _threshold1);
-      _smallCompound = BASE > (_reward0 + _reward1) * BASE;
+      _smallCompound = BASE > (_reward0 + _reward1);
     } else if (_threshold0 > 0) {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, true, true);
       (_reward0, , , ) = compoundor.autoCompound(_params);

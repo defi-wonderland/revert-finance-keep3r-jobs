@@ -27,6 +27,20 @@ abstract contract Keep3rJob is IKeep3rJob, Pausable {
   uint256 internal constant _BOOST_BASE = 10_000;
 
   /// @inheritdoc IKeep3rJob
+  function setKeep3rRequirements(
+    IERC20 _bond,
+    uint256 _minBond,
+    uint256 _earnings,
+    uint256 _age
+  ) public onlyGovernance {
+    requiredBond = _bond;
+    requiredMinBond = _minBond;
+    requiredEarnings = _earnings;
+    requiredAge = _age;
+    emit Keep3rRequirementsSet(_bond, _minBond, _earnings, _age);
+  }
+
+  /// @inheritdoc IKeep3rJob
   function setKeep3r(IKeep3r _keep3r) public onlyGovernance {
     keep3r = _keep3r;
     emit Keep3rSet(_keep3r);

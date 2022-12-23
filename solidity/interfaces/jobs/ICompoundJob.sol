@@ -88,10 +88,10 @@ interface ICompoundJob is IKeep3rJob {
   /**
     @notice Mapping which contains the tokenId and their tokens addresses
     @param  _tokenId The token id
-    @return The address of the token0
-    @return The address of the token1
+    @return token0 The address of the token0
+    @return token1 The address of the token1
   */
-  function tokenIdStored(uint256 _tokenId) external view returns (address, address);
+  function tokenIdStored(uint256 _tokenId) external view returns (address token0, address token1);
 
   /*///////////////////////////////////////////////////////////////
                               LOGIC
