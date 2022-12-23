@@ -4,7 +4,6 @@ pragma solidity >=0.8.4 <0.9.0;
 import '@interfaces/jobs/ICompoundJob.sol';
 import '@contracts/jobs/Keep3rJob.sol';
 import '@contracts/utils/PRBMath.sol';
-import 'forge-std/console.sol';
 
 contract CompoundJob is ICompoundJob, Keep3rJob {
   /// @inheritdoc ICompoundJob
