@@ -12,6 +12,7 @@ workspace.code-workspace
 .github/CODEOWNERS
 LICENSE
 *.sh
+*.yml
 
 # Foundry
 cache/
