@@ -50,8 +50,8 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
     idTokens memory _idTokens = tokenIdStored[_tokenId];
 
     if (_idTokens.token0 == address(0)) {
-      (, , address token0, address token1, , , , , , , , ) = nonfungiblePositionManager.positions(_tokenId);
-      _idTokens = idTokens(token0, token1);
+      (, , address _token0, address _token1, , , , , , , , ) = nonfungiblePositionManager.positions(_tokenId);
+      _idTokens = idTokens(_token0, _token1);
       tokenIdStored[_tokenId] = _idTokens;
     }
     uint256 _threshold0 = whiteList[_idTokens.token0];
