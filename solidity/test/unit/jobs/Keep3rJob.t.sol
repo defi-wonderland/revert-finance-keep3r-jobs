@@ -58,14 +58,14 @@ contract UnitKeep3rJobUpkeep is Base {
   }
 
   function testRevertIfInvalidKeeper() public {
-    vm.mockCall(address(keep3r), abi.encodeWithSelector(IKeep3rJobWorkable.isBondedKeeper.selector), abi.encode(false));
+    vm.mockCall(address(keep3r), abi.encodeWithSelector(IKeep3rJobWorkable.isKeeper.selector), abi.encode(false));
 
     vm.expectRevert(abi.encodeWithSelector(IKeep3rJob.InvalidKeeper.selector));
     job.upkeepForTest();
   }
 
   function testCallWorked() public {
-    vm.mockCall(address(keep3r), abi.encodeWithSelector(IKeep3rJobWorkable.isBondedKeeper.selector), abi.encode(true));
+    vm.mockCall(address(keep3r), abi.encodeWithSelector(IKeep3rJobWorkable.isKeeper.selector), abi.encode(true));
     vm.expectCall(address(keep3r), abi.encodeWithSelector(IKeep3rJobWorkable.worked.selector, keeper));
 
     vm.prank(keeper);
