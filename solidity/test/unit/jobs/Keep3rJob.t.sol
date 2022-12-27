@@ -29,24 +29,24 @@ contract Base is DSTestPlus {
 contract UnitKeep3rJobSetKeep3r is Base {
   event Keep3rSet(IKeep3r keep3r);
 
-  function testRevertIfNotGovernance(IKeep3r keep3r) public {
+  function testRevertIfNotGovernance(IKeep3r fuzzKeep3r) public {
     vm.expectRevert(abi.encodeWithSelector(IGovernable.OnlyGovernance.selector));
-    job.setKeep3r(keep3r);
+    job.setKeep3r(fuzzKeep3r);
   }
 
-  function testSetKeep3r(IKeep3r keep3r) public {
+  function testSetKeep3r(IKeep3r fuzzKeep3r) public {
     vm.prank(governance);
-    job.setKeep3r(keep3r);
+    job.setKeep3r(fuzzKeep3r);
 
-    assertEq(address(job.keep3r()), address(keep3r));
+    assertEq(address(job.keep3r()), address(fuzzKeep3r));
   }
 
-  function testEmitEvent(IKeep3r keep3r) public {
+  function testEmitEvent(IKeep3r fuzzKeep3r) public {
     vm.expectEmit(false, false, false, true);
-    emit Keep3rSet(keep3r);
+    emit Keep3rSet(fuzzKeep3r);
 
     vm.prank(governance);
-    job.setKeep3r(keep3r);
+    job.setKeep3r(fuzzKeep3r);
   }
 }
 
@@ -55,26 +55,6 @@ contract UnitKeep3rJobUpkeep is Base {
     super.setUp();
 
     vm.mockCall(address(keep3r), abi.encodeWithSelector(IKeep3rJobWorkable.worked.selector, keeper), abi.encode());
-  }
-
-  function testCheckKeeperValidity(
-    IERC20 bond,
-    uint256 minBond,
-    uint256 earnings,
-    uint256 age
-  ) public {
-    vm.prank(governance);
-    job.setKeep3rRequirements(bond, minBond, earnings, age);
-
-    vm.mockCall(
-      address(keep3r),
-      abi.encodeWithSelector(IKeep3rJobWorkable.isBondedKeeper.selector, keeper, bond, minBond, earnings, age),
-      abi.encode(true)
-    );
-    vm.expectCall(address(keep3r), abi.encodeWithSelector(IKeep3rJobWorkable.isBondedKeeper.selector, keeper, bond, minBond, earnings, age));
-
-    vm.prank(keeper);
-    job.upkeepForTest();
   }
 
   function testRevertIfInvalidKeeper() public {

@@ -18,15 +18,6 @@ interface IKeep3rJob is IPausable {
    */
   event Keep3rSet(IKeep3r _keep3r);
 
-  /**
-    @notice Emitted when setting new keeper requirements
-    @param  _bond The required token to bond by keepers
-    @param  _minBond The minimum amount bound
-    @param  _earnings The earnings of the keeper
-    @param  _age The age of the keeper in the Keep3r network
-   */
-  event Keep3rRequirementsSet(IERC20 _bond, uint256 _minBond, uint256 _earnings, uint256 _age);
-
   /*///////////////////////////////////////////////////////////////
                               ERRORS
   //////////////////////////////////////////////////////////////*/
@@ -79,18 +70,4 @@ interface IKeep3rJob is IPausable {
     @param  _keep3r The address of the keeper to be set
    */
   function setKeep3r(IKeep3r _keep3r) external;
-
-  /**
-    @notice Sets the keeper requirements
-    @param  _bond The required token to bond by keepers
-    @param  _minBond The minimum amount bound
-    @param  _earnings The earnings of the keeper
-    @param  _age The age of the keeper in the Keep3r network
-   */
-  function setKeep3rRequirements(
-    IERC20 _bond,
-    uint256 _minBond,
-    uint256 _earnings,
-    uint256 _age
-  ) external;
 }

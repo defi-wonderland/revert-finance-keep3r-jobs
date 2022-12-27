@@ -49,7 +49,7 @@ contract Base is DSTestPlus {
 
   // mock tokens
   IERC20 mockToken0 = IERC20(mockContract('mockToken0'));
-  IERC20 mockToken1 = IERC20(mockContract('mockToken0'));
+  IERC20 mockToken1 = IERC20(mockContract('mockToken1'));
 
   // mock Compoundor and NonfungiblePositionManager
   ICompoundor mockCompoundor = ICompoundor(mockContract('mockCompoundor'));
