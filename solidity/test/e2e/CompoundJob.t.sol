@@ -4,15 +4,14 @@ pragma solidity >=0.8.4 <0.9.0;
 import '@test/e2e/Common.sol';
 
 contract E2ECompoundJob is CommonE2EBase {
+  uint256 public tokenId = 360274;
+  address public token0;
+  address public token1;
 
-    uint256 public tokenId = 360274;
-    address public token0;
-    address public token1;
+  // 2% miltiplied BASE
+  uint256 threshold = 20_000;
 
-    // 2% miltiplied BASE
-    uint256 threshold = 20_000;
-
-    function setUp() public override {
+  function setUp() public override {
     super.setUp();
 
     _setUpJob(compoundJob);
@@ -29,9 +28,9 @@ contract E2ECompoundJob is CommonE2EBase {
     vm.stopPrank();
 
     // costs in dollars were calculated using as gasFee = 14077421096
-    }
+  }
 
-    function testWorkForFree() public {
+  function testWorkForFree() public {
     // WorkForFree
     vm.prank(user1);
     compoundJob.workForFree(tokenId);
