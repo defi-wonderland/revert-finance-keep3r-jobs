@@ -19,22 +19,39 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
   mapping(uint256 => idTokens) public tokenIdStored;
 
   /** 
-  @notice The base
+    @notice The base
   */
   uint256 public constant BASE = 10_000;
 
-  constructor(address _governance) payable Governable(_governance) {
-    compoundor = ICompoundor(0x5411894842e610C4D0F6Ed4C232DA689400f94A1);
-    nonfungiblePositionManager = INonfungiblePositionManager(address(0));
+  constructor(
+    address _governance,
+    ICompoundor _compoundor,
+    INonfungiblePositionManager _nonfungiblePositionManager
+  ) payable Governable(_governance) {
+    compoundor = _compoundor;
+    nonfungiblePositionManager = _nonfungiblePositionManager;
   }
 
   /// @inheritdoc ICompoundJob
   function work(uint256 _tokenId) external upkeep(msg.sender) notPaused {
+    _work(_tokenId);
+  }
+
+  /// @inheritdoc ICompoundJob
+  function workForFree(uint256 _tokenId) external {
+    _work(_tokenId);
+  }
+
+  /**
+    @notice Works for the keep3r or for external user
+    @param _tokenId The token id
+  */
+  function _work(uint256 _tokenId) internal {
     idTokens memory _idTokens = tokenIdStored[_tokenId];
 
     if (_idTokens.token0 == address(0)) {
-      (, , address token0, address token1, , , , , , , , ) = nonfungiblePositionManager.positions(_tokenId);
-      _idTokens = idTokens(token0, token1);
+      (, , address _token0, address _token1, , , , , , , , ) = nonfungiblePositionManager.positions(_tokenId);
+      _idTokens = idTokens(_token0, _token1);
       tokenIdStored[_tokenId] = _idTokens;
     }
     uint256 _threshold0 = whiteList[_idTokens.token0];
@@ -62,6 +79,12 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
     emit TokenAddedToWhiteList(_token, _threshold);
   }
 
+  /**
+    @notice Calls autocompound with the correct parameters
+    @param _tokenId The token id
+    @param _threshold0 The threshold for token0
+    @param _threshold1 The threshold for token1
+  */
   function _callAutoCompound(
     uint256 _tokenId,
     uint256 _threshold0,
@@ -78,7 +101,7 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
       (_reward0, _reward1, , ) = compoundor.autoCompound(_params);
       _reward0 = PRBMath.mulDiv(_reward0, BASE, _threshold0);
       _reward1 = PRBMath.mulDiv(_reward1, BASE, _threshold1);
-      _smallCompound = BASE > (_reward0 + _reward1) * BASE;
+      _smallCompound = BASE > (_reward0 + _reward1);
     } else if (_threshold0 > 0) {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, true, true);
       (_reward0, , , ) = compoundor.autoCompound(_params);

@@ -10,8 +10,11 @@
 workspace.code-workspace
 .DS_STORE
 .github/CODEOWNERS
+.gas-snapshot
 LICENSE
+Makefile
 *.sh
+*.yml
 
 # Foundry
 cache/
