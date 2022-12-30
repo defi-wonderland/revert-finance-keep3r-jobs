@@ -326,23 +326,43 @@ contract UnitCompoundJobSetNonfungiblePositionManager is Base {
 contract UnitCompoundJobAddTokenToWhiteList is Base {
   event TokenAddedToWhiteList(address token, uint256 threshold);
 
-  function testRevertIfNotGovernance(address token, uint256 threshold) public {
+  function testRevertIfNotGovernance(address[] calldata tokens, uint256[] calldata thresholds) public {
     vm.expectRevert(abi.encodeWithSelector(IGovernable.OnlyGovernance.selector));
-    job.addTokenToWhiteList(token, threshold);
+    job.addTokenToWhiteList(tokens, thresholds);
   }
 
-  function testSetMultiplier(address token, uint256 threshold) external {
+  function testAddTokenToWhiteList(address[] calldata tokens, uint256[] calldata thresholds) external {
+    vm.assume(tokens.length < 5 && thresholds.length > 4);
     vm.prank(governance);
-    job.addTokenToWhiteList(token, threshold);
+    job.addTokenToWhiteList(tokens, thresholds);
 
-    assertEq(threshold, job.whiteList(token));
+    for (uint256 i; i < tokens.length; ++i) {
+      assertEq(thresholds[i], job.whiteList(tokens[i]));
+    }
   }
 
-  function testEmitCollectMultiplier(address token, uint256 threshold) external {
+  function testEmitTokenAddedToWhiteList(address[] calldata tokens, uint256[] calldata thresholds) external {
+    vm.assume(tokens.length < 5 && tokens.length > 0 && thresholds.length > 4);
     expectEmitNoIndex();
-    emit TokenAddedToWhiteList(token, threshold);
+    for (uint256 i; i < tokens.length; ++i) {
+      emit TokenAddedToWhiteList(tokens[i], thresholds[i]);
+    }
 
     vm.prank(governance);
-    job.addTokenToWhiteList(token, threshold);
+    job.addTokenToWhiteList(tokens, thresholds);
+  }
+}
+
+contract UnitCompoundJobWithdraw is Base {
+  function testWithdraw(address[] calldata tokens, uint256[] calldata balances) external {
+    vm.assume(tokens.length < 5 && balances.length > 4);
+
+    for (uint256 i; i < tokens.length; ++i) {
+      vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.accountBalances.selector), abi.encode(balances[i]));
+
+      vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.withdrawBalance.selector), abi.encode(true));
+    }
+
+    job.withdraw(tokens);
   }
 }
