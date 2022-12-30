@@ -1,7 +1,14 @@
+<<<<<<< HEAD
 E2EAutoCompound:testWithdrawRewardFalseSwapFalse() (gas: 411512)
 E2EAutoCompound:testWithdrawRewardFalseSwapTrue() (gas: 522460)
 E2EAutoCompound:testWithdrawRewardTrueSwapFalse() (gas: 432746)
 E2EAutoCompound:testWithdrawRewardTrueSwapTrue() (gas: 523832)
+=======
+E2EAutoCompound:testWithdrawRewardFalseSwapFalse() (gas: 408565)
+E2EAutoCompound:testWithdrawRewardFalseSwapTrue() (gas: 519513)
+E2EAutoCompound:testWithdrawRewardTrueSwapFalse() (gas: 450901)
+E2EAutoCompound:testWithdrawRewardTrueSwapTrue() (gas: 541987)
+>>>>>>> 619bdc268faf1873a41ff7e690990974c9a68d29
 E2ECompoundJob:testWork() (gas: 730085)
 E2ECompoundJob:testWorkForFree() (gas: 554229)
 UnitCompoundJobAddTokenToWhiteList:testEmitCollectMultiplier(address,uint256) (runs: 5, μ: 34074, ~: 38054)
