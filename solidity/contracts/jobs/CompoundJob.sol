@@ -116,7 +116,7 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
 
     // We have 2 tokens of interest
     if (_threshold0 * _threshold1 > 0) {
-      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.NONE, true, true);
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.NONE, false, false);
       (_reward0, _reward1, , ) = compoundor.autoCompound(_params);
       _reward0 = PRBMath.mulDiv(_reward0, BASE, _threshold0);
       _reward1 = PRBMath.mulDiv(_reward1, BASE, _threshold1);

@@ -36,8 +36,8 @@ contract E2ECompoundJob is CommonE2EBase {
     vm.prank(user1);
     compoundJob.workForFree(tokenId);
 
-    uint256 afterBalanceToken0 = IERC20(token0).balanceOf(address(compoundJob));
-    uint256 afterBalanceToken1 = IERC20(token1).balanceOf(address(compoundJob));
+    uint256 afterBalanceToken0 = compoundor.accountBalances(address(compoundJob), token0);
+    uint256 afterBalanceToken1 = compoundor.accountBalances(address(compoundJob), token1);
 
     // Check the balanaces
     assertGt(afterBalanceToken0, 0);
@@ -49,8 +49,8 @@ contract E2ECompoundJob is CommonE2EBase {
     vm.prank(keeper);
     compoundJob.work(tokenId);
 
-    uint256 afterBalanceToken0 = IERC20(token0).balanceOf(address(compoundJob));
-    uint256 afterBalanceToken1 = IERC20(token1).balanceOf(address(compoundJob));
+    uint256 afterBalanceToken0 = compoundor.accountBalances(address(compoundJob), token0);
+    uint256 afterBalanceToken1 = compoundor.accountBalances(address(compoundJob), token1);
 
     // Check the balanaces
     assertGt(afterBalanceToken0, 0);
