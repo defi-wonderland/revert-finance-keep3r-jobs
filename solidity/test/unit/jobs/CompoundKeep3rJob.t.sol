@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4 <0.9.0;
 
-import '@contracts/jobs/CompoundJob.sol';
+import '@contracts/jobs/CompoundKeep3rJob.sol';
 import '@test/utils/DSTestPlus.sol';
 import '@interfaces/jobs/ICompoundJob.sol';
 
-contract CompoundJobForTest is CompoundJob {
+contract CompoundKeep3rJobForTest is CompoundKeep3rJob {
   address public upkeepKeeperForTest;
 
   constructor(
     address _governance,
     ICompoundor _compoundor,
     INonfungiblePositionManager _nonfungiblePositionManager
-  ) CompoundJob(_governance, _compoundor, _nonfungiblePositionManager) {}
+  ) CompoundKeep3rJob(_governance, _compoundor, _nonfungiblePositionManager) {}
 
   function addTokenWhiteListForTest(address _token, uint256 _threshold) external {
     whiteList[_token] = _threshold;
@@ -56,10 +56,10 @@ contract Base is DSTestPlus {
   INonfungiblePositionManager mockNonfungiblePositionManager = INonfungiblePositionManager(mockContract('mockNonfungiblePositionManager'));
 
   IKeep3r keep3r;
-  CompoundJobForTest job;
+  CompoundKeep3rJobForTest job;
 
   function setUp() public virtual {
-    job = new CompoundJobForTest(governance, mockCompoundor, mockNonfungiblePositionManager);
+    job = new CompoundKeep3rJobForTest(governance, mockCompoundor, mockNonfungiblePositionManager);
     keep3r = job.keep3r();
 
     // mock whiteList

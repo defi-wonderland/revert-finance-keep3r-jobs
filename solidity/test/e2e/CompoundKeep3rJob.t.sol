@@ -3,7 +3,7 @@ pragma solidity >=0.8.4 <0.9.0;
 
 import '@test/e2e/Common.sol';
 
-contract E2ECompoundJob is CommonE2EBase {
+contract E2ECompoundKeep3rJob is CommonE2EBase {
   uint256 public tokenId = 360274;
   address public token0;
   address public token1;

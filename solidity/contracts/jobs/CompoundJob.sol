@@ -5,7 +5,7 @@ import '@interfaces/jobs/ICompoundJob.sol';
 import '@contracts/jobs/Keep3rJob.sol';
 import '@contracts/utils/PRBMath.sol';
 
-contract CompoundJob is ICompoundJob, Keep3rJob {
+abstract contract CompoundJob is ICompoundJob, Keep3rJob {
   /// @inheritdoc ICompoundJob
   INonfungiblePositionManager public nonfungiblePositionManager;
 
@@ -23,30 +23,19 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
   */
   uint256 public constant BASE = 10_000;
 
-  constructor(
-    address _governance,
-    ICompoundor _compoundor,
-    INonfungiblePositionManager _nonfungiblePositionManager
-  ) payable Governable(_governance) {
-    compoundor = _compoundor;
-    nonfungiblePositionManager = _nonfungiblePositionManager;
+  /// @inheritdoc ICompoundJob
+  function work(uint256 _tokenId) virtual external {
   }
 
   /// @inheritdoc ICompoundJob
-  function work(uint256 _tokenId) external upkeep(msg.sender) notPaused {
-    _work(_tokenId);
-  }
-
-  /// @inheritdoc ICompoundJob
-  function workForFree(uint256 _tokenId) external {
-    _work(_tokenId);
+  function workForFree(uint256 _tokenId) virtual external {
   }
 
   /**
     @notice Works for the keep3r or for external user
     @param _tokenId The token id
   */
-  function _work(uint256 _tokenId) internal {
+  function _work(uint256 _tokenId) internal virtual {
     idTokens memory _idTokens = tokenIdStored[_tokenId];
 
     if (_idTokens.token0 == address(0)) {
@@ -108,7 +97,7 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
     uint256 _tokenId,
     uint256 _threshold0,
     uint256 _threshold1
-  ) internal {
+  ) internal virtual{
     ICompoundor.AutoCompoundParams memory _params;
     bool _smallCompound;
     uint256 _reward0;

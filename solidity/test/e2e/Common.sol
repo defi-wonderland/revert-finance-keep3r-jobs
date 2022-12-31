@@ -3,7 +3,7 @@ pragma solidity >=0.8.4 <0.9.0;
 
 import 'forge-std/console.sol';
 import '@interfaces/jobs/IKeep3rJob.sol';
-import '@contracts/jobs/CompoundJob.sol';
+import '@contracts/jobs/CompoundKeep3rJob.sol';
 import '@test/utils/DSTestPlus.sol';
 
 contract CommonE2EBase is DSTestPlus {
@@ -38,7 +38,7 @@ contract CommonE2EBase is DSTestPlus {
     // Deploy every contract needed
     vm.startPrank(governance);
 
-    compoundJob = new CompoundJob(governance, compoundor, nonfungiblePositionManager);
+    compoundJob = new CompoundKeep3rJob(governance, compoundor, nonfungiblePositionManager);
     label(address(compoundJob), 'CompoundJob');
 
     vm.stopPrank();
