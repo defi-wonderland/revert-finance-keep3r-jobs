@@ -2,8 +2,9 @@
 pragma solidity >=0.8.4 <0.9.0;
 
 import '@contracts/jobs/CompoundJob.sol';
+import '@contracts/jobs/Keep3rJob.sol';
 
-contract CompoundKeep3rJob is CompoundJob {
+contract CompoundKeep3rJob is CompoundJob, Keep3rJob {
 
   constructor(
     address _governance,

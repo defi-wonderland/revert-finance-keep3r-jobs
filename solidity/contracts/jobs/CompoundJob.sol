@@ -2,10 +2,10 @@
 pragma solidity >=0.8.4 <0.9.0;
 
 import '@interfaces/jobs/ICompoundJob.sol';
-import '@contracts/jobs/Keep3rJob.sol';
 import '@contracts/utils/PRBMath.sol';
+import 'keep3r/contracts/peripherals/Governable.sol';
 
-abstract contract CompoundJob is ICompoundJob, Keep3rJob {
+abstract contract CompoundJob is Governable, ICompoundJob {
   /// @inheritdoc ICompoundJob
   INonfungiblePositionManager public nonfungiblePositionManager;
 
