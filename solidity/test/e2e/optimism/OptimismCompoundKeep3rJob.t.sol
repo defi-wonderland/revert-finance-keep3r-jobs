@@ -16,6 +16,8 @@ contract E2EOptimismCompoundKeep3rJob is CommonE2EBase {
   function setUp() public override {
     super.setUp();
 
+    _setUpJob(compoundJob);
+
     // Check which tokens have the tokenId
     (, , token0, token1, , , , , , , , ) = nonfungiblePositionManager.positions(tokenId);
 

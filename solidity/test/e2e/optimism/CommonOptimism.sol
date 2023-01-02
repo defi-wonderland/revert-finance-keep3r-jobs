@@ -7,11 +7,11 @@ import '@contracts/jobs/CompoundKeep3rRatedJob.sol';
 import '@test/utils/DSTestPlus.sol';
 
 contract CommonE2EBase is DSTestPlus {
-  uint256 constant FORK_BLOCK = 59020048;
+  uint256 constant FORK_BLOCK = 59178017;
 
   address user1 = label(address(100), 'user1');
   address governance = label(address(102), 'governance');
-  address keeper = label(0x3975e0292bEF3Fca8feF414f01E120652Ac60A69, 'keeper');
+  address keeper = label(0x9429cd74A3984396f3117d51cde46ea8e0e21487, 'keeper');
   address keep3rGovernance = label(0x7d6daDb31dBeBc68c8A0b2cCfE5C1f26F24bD41d, 'keep3rGovernance');
 
   uint256 userInitialBalance = 1_000_000_000 ether;
