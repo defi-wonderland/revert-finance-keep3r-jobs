@@ -33,9 +33,9 @@
     "release": "standard-version",
     "test": "yarn test:unit && yarn test:e2e",
     "test:e2e": "forge test --match-contract E2E -vvv",
+    "test:gas": "forge test --match-contract E2E -vvv --gas-report",
     "test:mainnet": "forge test --match-contract E2EMainnet -vvv",
     "test:optimism": "forge test --match-contract E2EOptimism -vvv",
-    "test:gas": "forge test --match-contract E2E -vvv --gas-report",
     "test:unit": "forge test --match-contract Unit -vvv"
   },
   "lint-staged": {
