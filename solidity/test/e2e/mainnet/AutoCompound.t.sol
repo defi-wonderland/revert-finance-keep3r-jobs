@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4 <0.9.0;
 
-import '@test/e2e/optimism/CommonOptimism.sol';
+import '@test/e2e/mainnet/CommonMainnet.sol';
 
-contract E2EOptimismAutoCompound is CommonE2EBase {
+contract E2EMainnetAutoCompound is CommonE2EBase {
   uint256 tokenId = 360274;
   ICompoundor.AutoCompoundParams params;
 

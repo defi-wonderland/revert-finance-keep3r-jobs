@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4 <0.9.0;
 
-import '@test/e2e/optimism/CommonOptimism.sol';
+import '@test/e2e/mainnet/CommonMainnet.sol';
 
-contract E2EOptimismCompoundKeep3rJob is CommonE2EBase {
+contract E2EMainnetCompoundKeep3rJob is CommonE2EBase {
   uint256 public tokenId = 360274;
   address public token0;
   address public token1;
