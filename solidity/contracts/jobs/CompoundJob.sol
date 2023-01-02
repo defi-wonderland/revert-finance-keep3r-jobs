@@ -24,12 +24,10 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   uint256 public constant BASE = 10_000;
 
   /// @inheritdoc ICompoundJob
-  function work(uint256 _tokenId) virtual external {
-  }
+  function work(uint256 _tokenId) external virtual {}
 
   /// @inheritdoc ICompoundJob
-  function workForFree(uint256 _tokenId) virtual external {
-  }
+  function workForFree(uint256 _tokenId) external virtual {}
 
   /**
     @notice Works for the keep3r or for external user
@@ -97,7 +95,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
     uint256 _tokenId,
     uint256 _threshold0,
     uint256 _threshold1
-  ) internal virtual{
+  ) internal virtual {
     ICompoundor.AutoCompoundParams memory _params;
     bool _smallCompound;
     uint256 _reward0;

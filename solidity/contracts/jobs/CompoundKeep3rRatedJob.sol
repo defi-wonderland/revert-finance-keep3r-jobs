@@ -2,9 +2,9 @@
 pragma solidity >=0.8.4 <0.9.0;
 
 import '@contracts/jobs/CompoundJob.sol';
-import '@contracts/jobs/Keep3rJob.sol';
+import '@contracts/jobs/Keep3rRatedJob.sol';
 
-contract CompoundKeep3rJob is CompoundJob, Keep3rJob {
+contract CompoundKeep3rRatedJob is CompoundJob, Keep3rRatedJob {
   constructor(
     address _governance,
     ICompoundor _compoundor,
@@ -15,7 +15,7 @@ contract CompoundKeep3rJob is CompoundJob, Keep3rJob {
   }
 
   /// @inheritdoc ICompoundJob
-  function work(uint256 _tokenId) external override upkeep(msg.sender) notPaused {
+  function work(uint256 _tokenId) external override upkeep(msg.sender, usdPerGasUnit) notPaused {
     _work(_tokenId);
   }
 

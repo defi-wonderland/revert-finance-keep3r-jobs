@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4 <0.9.0;
 
-import '@contracts/jobs/CompoundKeep3rJob.sol';
+import '@contracts/jobs/CompoundKeep3rRatedJob.sol';
 import '@test/utils/DSTestPlus.sol';
 import '@interfaces/jobs/ICompoundJob.sol';
 
-contract CompoundKeep3rJobForTest is CompoundKeep3rJob {
+contract CompoundKeep3rRatedJobForTest is CompoundKeep3rRatedJob {
   address public upkeepKeeperForTest;
 
   constructor(
     address _governance,
     ICompoundor _compoundor,
     INonfungiblePositionManager _nonfungiblePositionManager
-  ) CompoundKeep3rJob(_governance, _compoundor, _nonfungiblePositionManager) {}
+  ) CompoundKeep3rRatedJob(_governance, _compoundor, _nonfungiblePositionManager) {}
 
   function addTokenWhiteListForTest(address _token, uint256 _threshold) external {
     whiteList[_token] = _threshold;
@@ -30,7 +30,7 @@ contract CompoundKeep3rJobForTest is CompoundKeep3rJob {
     isPaused = true;
   }
 
-  modifier upkeep(address _keeper) override {
+  modifier upkeep(address _keeper, uint256 _usdPerGasUnit) override {
     upkeepKeeperForTest = _keeper;
     _;
   }
@@ -56,10 +56,10 @@ contract Base is DSTestPlus {
   INonfungiblePositionManager mockNonfungiblePositionManager = INonfungiblePositionManager(mockContract('mockNonfungiblePositionManager'));
 
   IKeep3r keep3r;
-  CompoundKeep3rJobForTest job;
+  CompoundKeep3rRatedJobForTest job;
 
   function setUp() public virtual {
-    job = new CompoundKeep3rJobForTest(governance, mockCompoundor, mockNonfungiblePositionManager);
+    job = new CompoundKeep3rRatedJobForTest(governance, mockCompoundor, mockNonfungiblePositionManager);
     keep3r = job.keep3r();
 
     // mock whiteList
@@ -68,7 +68,7 @@ contract Base is DSTestPlus {
   }
 }
 
-contract UnitCompoundKeep3rJobWork is Base {
+contract UnitCompoundKeep3rRatedJobWork is Base {
   event Worked();
 
   function setUp() public override {
@@ -175,7 +175,7 @@ contract UnitCompoundKeep3rJobWork is Base {
   }
 }
 
-contract UnitCompoundKeep3rJobWorkForFree is Base {
+contract UnitCompoundKeep3rRatedJobWorkForFree is Base {
   event Worked();
 
   function setUp() public override {
@@ -275,7 +275,7 @@ contract UnitCompoundKeep3rJobWorkForFree is Base {
   }
 }
 
-contract UnitCompoundKeep3rJobSetCompoundor is Base {
+contract UnitCompoundKeep3rRatedJobSetCompoundor is Base {
   event CompoundorSetted(ICompoundor compoundor);
 
   function testRevertIfNotGovernance(ICompoundor compoundor) public {
@@ -299,7 +299,7 @@ contract UnitCompoundKeep3rJobSetCompoundor is Base {
   }
 }
 
-contract UnitCompoundKeep3rJobSetNonfungiblePositionManager is Base {
+contract UnitCompoundKeep3rRatedJobSetNonfungiblePositionManager is Base {
   event NonfungiblePositionManagerSetted(INonfungiblePositionManager nonfungiblePositionManager);
 
   function testRevertIfNotGovernance(INonfungiblePositionManager nonfungiblePositionManager) public {
@@ -323,7 +323,7 @@ contract UnitCompoundKeep3rJobSetNonfungiblePositionManager is Base {
   }
 }
 
-contract UnitCompoundKeep3rJobAddTokenToWhiteList is Base {
+contract UnitCompoundKeep3rRatedJobAddTokenToWhiteList is Base {
   event TokenAddedToWhiteList(address token, uint256 threshold);
 
   function testRevertIfNotGovernance(address[] calldata tokens, uint256[] calldata thresholds) public {
@@ -353,7 +353,7 @@ contract UnitCompoundKeep3rJobAddTokenToWhiteList is Base {
   }
 }
 
-contract UnitCompoundKeep3rJobWithdraw is Base {
+contract UnitCompoundKeep3rRatedJobWithdraw is Base {
   function testWithdraw(address[] calldata tokens, uint256[] calldata balances) external {
     vm.assume(tokens.length < 5 && balances.length > 4);
 
