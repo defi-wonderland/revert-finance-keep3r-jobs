@@ -30,7 +30,7 @@ abstract contract Keep3rJob is IKeep3rJob, Pausable {
     @param  _keeper the address to check the keeper data
     @return _isValid true if the keeper meets the bonding requirements
    */
-  function _isValidKeeper(address _keeper) internal virtual returns (bool _isValid) {
+  function _isValidKeeper(address _keeper) internal returns (bool _isValid) {
     return keep3r.isKeeper(_keeper);
   }
 }

@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4 <0.9.0;
 
-interface IKeep3rRatedJob {
+import '@interfaces/jobs/IKeep3rJob.sol';
+
+interface IKeep3rRatedJob is IKeep3rJob {
   /*///////////////////////////////////////////////////////////////
                               EVENTS
   //////////////////////////////////////////////////////////////*/

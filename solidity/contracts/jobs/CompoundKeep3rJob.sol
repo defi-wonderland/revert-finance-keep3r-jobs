@@ -9,7 +9,7 @@ contract CompoundKeep3rJob is CompoundJob, Keep3rJob {
     address _governance,
     ICompoundor _compoundor,
     INonfungiblePositionManager _nonfungiblePositionManager
-  ) payable Governable(_governance) {
+  ) payable CompoundJob(_governance, _compoundor, _nonfungiblePositionManager) {
     compoundor = _compoundor;
     nonfungiblePositionManager = _nonfungiblePositionManager;
   }

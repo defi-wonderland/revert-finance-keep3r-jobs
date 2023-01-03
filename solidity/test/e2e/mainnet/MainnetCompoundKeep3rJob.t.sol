@@ -10,7 +10,6 @@ contract E2EMainnetCompoundKeep3rJob is CommonE2EBase {
   address[] public tokens;
   uint256[] public thresholds;
 
-  // 2% miltiplied BASE
   uint256 threshold = 20_000;
 
   function setUp() public override {
@@ -45,7 +44,7 @@ contract E2EMainnetCompoundKeep3rJob is CommonE2EBase {
   }
 
   function testWork() public {
-    // WorkForFree
+    // Work
     vm.prank(keeper);
     compoundJob.work(tokenId);
 
@@ -55,6 +54,19 @@ contract E2EMainnetCompoundKeep3rJob is CommonE2EBase {
     // Check the balanaces
     assertGt(afterBalanceToken0, 0);
     assertGt(afterBalanceToken1, 0);
+  }
+
+  function testWorkRevertSmallCompound() public {
+    thresholds[0] = 1 ether;
+    thresholds[1] = 1 ether;
+    vm.prank(governance);
+    compoundJob.addTokenToWhiteList(tokens, thresholds);
+
+    vm.expectRevert(abi.encodeWithSelector(ICompoundJob.CompoundJob_SmallCompound.selector));
+
+    // Work
+    vm.prank(keeper);
+    compoundJob.work(tokenId);
   }
 
   function _addTokenToWhiteList() internal {

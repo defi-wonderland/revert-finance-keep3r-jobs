@@ -48,7 +48,7 @@ contract CommonE2EBase is DSTestPlus {
   function _setUpJob(IKeep3rJob job) internal {
     vm.startPrank(keep3rGovernance);
     keep3r.addJob(address(job));
-    keep3r.forceLiquidityCreditsToJob(address(job), keep3r.liquidityMinimum() * 10);
+    keep3r.forceLiquidityCreditsToJob(address(job), 10e18);
     vm.stopPrank();
   }
 }

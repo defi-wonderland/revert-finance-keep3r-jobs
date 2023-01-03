@@ -23,6 +23,15 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   */
   uint256 public constant BASE = 10_000;
 
+  constructor(
+    address _governance,
+    ICompoundor _compoundor,
+    INonfungiblePositionManager _nonfungiblePositionManager
+  ) payable Governable(_governance) {
+    compoundor = _compoundor;
+    nonfungiblePositionManager = _nonfungiblePositionManager;
+  }
+
   /// @inheritdoc ICompoundJob
   function work(uint256 _tokenId) external virtual {}
 
@@ -33,7 +42,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
     @notice Works for the keep3r or for external user
     @param _tokenId The token id
   */
-  function _work(uint256 _tokenId) internal virtual {
+  function _work(uint256 _tokenId) internal {
     idTokens memory _idTokens = tokenIdStored[_tokenId];
 
     if (_idTokens.token0 == address(0)) {
@@ -95,7 +104,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
     uint256 _tokenId,
     uint256 _threshold0,
     uint256 _threshold1
-  ) internal virtual {
+  ) internal {
     ICompoundor.AutoCompoundParams memory _params;
     bool _smallCompound;
     uint256 _reward0;
@@ -103,17 +112,17 @@ abstract contract CompoundJob is Governable, ICompoundJob {
 
     // We have 2 tokens of interest
     if (_threshold0 * _threshold1 > 0) {
-      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.NONE, false, false);
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.NONE, false, true);
       (_reward0, _reward1, , ) = compoundor.autoCompound(_params);
       _reward0 = PRBMath.mulDiv(_reward0, BASE, _threshold0);
       _reward1 = PRBMath.mulDiv(_reward1, BASE, _threshold1);
       _smallCompound = BASE > (_reward0 + _reward1);
     } else if (_threshold0 > 0) {
-      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, false, false);
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, false, true);
       (_reward0, , , ) = compoundor.autoCompound(_params);
       _smallCompound = _threshold0 > _reward0 * BASE;
     } else {
-      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_1, false, false);
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_1, false, true);
       (, _reward1, , ) = compoundor.autoCompound(_params);
       _smallCompound = _threshold1 > _reward1 * BASE;
     }

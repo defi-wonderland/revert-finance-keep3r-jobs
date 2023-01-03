@@ -115,8 +115,8 @@ contract UnitCompoundKeep3rRatedJobWork is Base {
     uint128 reward0,
     uint128 reward1
   ) external {
-    vm.assume(reward0 > BASE);
-    vm.assume(reward1 > BASE);
+    vm.assume(reward0 > threshold0);
+    vm.assume(reward1 > threshold1);
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
     expectEmitNoIndex();
@@ -125,7 +125,7 @@ contract UnitCompoundKeep3rRatedJobWork is Base {
   }
 
   function testWorkNewIdWithToken0(uint256 tokenId, uint128 reward0) external {
-    vm.assume(reward0 > BASE);
+    vm.assume(reward0 > threshold0);
     job.addTokenWhiteListForTest(address(mockToken1), 0);
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, 0, 0, 0));
@@ -141,7 +141,7 @@ contract UnitCompoundKeep3rRatedJobWork is Base {
   }
 
   function testWorkNewIdWithToken1(uint256 tokenId, uint128 reward1) external {
-    vm.assume(reward1 > BASE);
+    vm.assume(reward1 > threshold1);
     job.addTokenWhiteListForTest(address(mockToken0), 0);
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(0, reward1, 0, 0));
@@ -161,8 +161,8 @@ contract UnitCompoundKeep3rRatedJobWork is Base {
     uint128 reward0,
     uint128 reward1
   ) external {
-    vm.assume(reward0 > BASE);
-    vm.assume(reward1 > BASE);
+    vm.assume(reward0 > threshold0);
+    vm.assume(reward1 > threshold1);
     vm.clearMockedCalls();
 
     job.addTokenIdStoredForTest(tokenId, address(mockToken0), address(mockToken1));
@@ -215,8 +215,8 @@ contract UnitCompoundKeep3rRatedJobWorkForFree is Base {
     uint128 reward0,
     uint128 reward1
   ) external {
-    vm.assume(reward0 > BASE);
-    vm.assume(reward1 > BASE);
+    vm.assume(reward0 > threshold0);
+    vm.assume(reward1 > threshold1);
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
     expectEmitNoIndex();
@@ -225,7 +225,7 @@ contract UnitCompoundKeep3rRatedJobWorkForFree is Base {
   }
 
   function testWorkForFreeNewIdWithToken0(uint256 tokenId, uint128 reward0) external {
-    vm.assume(reward0 > BASE);
+    vm.assume(reward0 > threshold0);
     job.addTokenWhiteListForTest(address(mockToken1), 0);
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, 0, 0, 0));
@@ -261,8 +261,8 @@ contract UnitCompoundKeep3rRatedJobWorkForFree is Base {
     uint128 reward0,
     uint128 reward1
   ) external {
-    vm.assume(reward0 > BASE);
-    vm.assume(reward1 > BASE);
+    vm.assume(reward0 > threshold0);
+    vm.assume(reward1 > threshold1);
     vm.clearMockedCalls();
 
     job.addTokenIdStoredForTest(tokenId, address(mockToken0), address(mockToken1));
