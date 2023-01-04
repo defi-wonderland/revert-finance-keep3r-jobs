@@ -19,6 +19,11 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   mapping(uint256 => idTokens) public tokenIdStored;
 
   /** 
+    @notice The array with all tokens in the whitelist
+  */
+  address[] internal whiteListTokens;
+
+  /** 
     @notice The base
   */
   uint256 public constant BASE = 10_000;
@@ -58,18 +63,6 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   }
 
   /// @inheritdoc ICompoundJob
-  function setCompoundor(ICompoundor _compoundor) external onlyGovernance {
-    compoundor = _compoundor;
-    emit CompoundorSetted(_compoundor);
-  }
-
-  /// @inheritdoc ICompoundJob
-  function setNonfungiblePositionManager(INonfungiblePositionManager _nonfungiblePositionManager) external onlyGovernance {
-    nonfungiblePositionManager = _nonfungiblePositionManager;
-    emit NonfungiblePositionManagerSetted(_nonfungiblePositionManager);
-  }
-
-  /// @inheritdoc ICompoundJob
   function addTokenToWhiteList(address[] calldata _tokens, uint256[] calldata _thresholds) external onlyGovernance {
     for (uint256 _i; _i < _tokens.length; ) {
       whiteList[_tokens[_i]] = _thresholds[_i];
@@ -79,6 +72,11 @@ abstract contract CompoundJob is Governable, ICompoundJob {
         ++_i;
       }
     }
+  }
+
+  /// @inheritdoc ICompoundJob
+  function getWhiteListTokens() external view returns (address[] memory _whiteListTokens) {
+    _whiteListTokens = whiteListTokens;
   }
 
   /// @inheritdoc ICompoundJob
@@ -92,6 +90,18 @@ abstract contract CompoundJob is Governable, ICompoundJob {
         ++_i;
       }
     }
+  }
+
+  /// @inheritdoc ICompoundJob
+  function setCompoundor(ICompoundor _compoundor) external onlyGovernance {
+    compoundor = _compoundor;
+    emit CompoundorSetted(_compoundor);
+  }
+
+  /// @inheritdoc ICompoundJob
+  function setNonfungiblePositionManager(INonfungiblePositionManager _nonfungiblePositionManager) external onlyGovernance {
+    nonfungiblePositionManager = _nonfungiblePositionManager;
+    emit NonfungiblePositionManagerSetted(_nonfungiblePositionManager);
   }
 
   /**

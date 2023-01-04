@@ -110,6 +110,25 @@ interface ICompoundJob is IKeep3rJob {
   function workForFree(uint256 _tokenId) external;
 
   /**
+    @notice Sets the token that has to be whitelisted
+    @param  _tokens The list of tokens
+    @param  _thresholds The list of thresholds
+   */
+  function addTokenToWhiteList(address[] memory _tokens, uint256[] memory _thresholds) external;
+
+  /**
+    @notice Array which contains all tokens in the whitelist
+    @return _whiteListTokens The array with all address
+  */
+  function getWhiteListTokens() external view returns (address[] memory _whiteListTokens);
+
+  /**
+    @notice Withdraws token balance for a address and token
+    @param _tokens The list of tokens
+  */
+  function withdraw(address[] calldata _tokens) external;
+
+  /**
     @notice Sets the address of the compoundor
     @param  _compoundor The address of the compoundor to be set
    */
@@ -120,17 +139,4 @@ interface ICompoundJob is IKeep3rJob {
     @param  _nonfungiblePositionManager The address of the non fungible PositionManager to be set
    */
   function setNonfungiblePositionManager(INonfungiblePositionManager _nonfungiblePositionManager) external;
-
-  /**
-    @notice Sets the token that has to be whitelisted
-    @param  _tokens The list of tokens
-    @param  _thresholds The list of thresholds
-   */
-  function addTokenToWhiteList(address[] memory _tokens, uint256[] memory _thresholds) external;
-
-  /**
-    @notice Withdraws token balance for a address and token
-    @param _tokens The list of tokens
-  */
-  function withdraw(address[] calldata _tokens) external;
 }

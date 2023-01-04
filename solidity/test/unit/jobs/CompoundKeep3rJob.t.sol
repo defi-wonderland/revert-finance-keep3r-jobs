@@ -16,6 +16,7 @@ contract CompoundKeep3rJobForTest is CompoundKeep3rJob {
 
   function addTokenWhiteListForTest(address _token, uint256 _threshold) external {
     whiteList[_token] = _threshold;
+    whiteListTokens.push(_token);
   }
 
   function addTokenIdStoredForTest(
@@ -364,5 +365,19 @@ contract UnitCompoundKeep3rJobWithdraw is Base {
     }
 
     job.withdraw(tokens);
+  }
+}
+
+contract UnitCompoundKeep3rJobGetWhiteListTokens is Base {
+  function setUp() public override {
+    super.setUp();
+    job.addTokenWhiteListForTest(address(mockToken0), threshold0);
+    job.addTokenWhiteListForTest(address(mockToken1), threshold1);
+  }
+
+  function testGetWhiteListTokens() external {
+    address[] memory tokens = job.getWhiteListTokens();
+    assertEq(tokens[0], address(mockToken0));
+    assertEq(tokens[1], address(mockToken1));
   }
 }
