@@ -9,10 +9,7 @@ contract CompoundKeep3rJob is CompoundJob, Keep3rJob {
     address _governance,
     ICompoundor _compoundor,
     INonfungiblePositionManager _nonfungiblePositionManager
-  ) payable CompoundJob(_governance, _compoundor, _nonfungiblePositionManager) {
-    compoundor = _compoundor;
-    nonfungiblePositionManager = _nonfungiblePositionManager;
-  }
+  ) payable CompoundJob(_governance, _compoundor, _nonfungiblePositionManager) {}
 
   /// @inheritdoc ICompoundJob
   function work(uint256 _tokenId) external override upkeep(msg.sender) notPaused {
