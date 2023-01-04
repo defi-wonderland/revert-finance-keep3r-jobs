@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.4 <0.9.0;
 
-import '@contracts/jobs/CompoundJob.sol';
+import '@contracts/jobs/CompoundKeep3rRatedJob.sol';
 import '@test/utils/DSTestPlus.sol';
 import '@interfaces/jobs/ICompoundJob.sol';
 
-contract CompoundJobForTest is CompoundJob {
+contract CompoundKeep3rRatedJobForTest is CompoundKeep3rRatedJob {
   address public upkeepKeeperForTest;
 
   constructor(
     address _governance,
     ICompoundor _compoundor,
     INonfungiblePositionManager _nonfungiblePositionManager
-  ) CompoundJob(_governance, _compoundor, _nonfungiblePositionManager) {}
+  ) CompoundKeep3rRatedJob(_governance, _compoundor, _nonfungiblePositionManager) {}
 
   function addTokenWhiteListForTest(address _token, uint256 _threshold) external {
     whiteList[_token] = _threshold;
@@ -30,7 +30,7 @@ contract CompoundJobForTest is CompoundJob {
     isPaused = true;
   }
 
-  modifier upkeep(address _keeper) override {
+  modifier upkeep(address _keeper, uint256 _usdPerGasUnit) override {
     upkeepKeeperForTest = _keeper;
     _;
   }
@@ -56,10 +56,10 @@ contract Base is DSTestPlus {
   INonfungiblePositionManager mockNonfungiblePositionManager = INonfungiblePositionManager(mockContract('mockNonfungiblePositionManager'));
 
   IKeep3r keep3r;
-  CompoundJobForTest job;
+  CompoundKeep3rRatedJobForTest job;
 
   function setUp() public virtual {
-    job = new CompoundJobForTest(governance, mockCompoundor, mockNonfungiblePositionManager);
+    job = new CompoundKeep3rRatedJobForTest(governance, mockCompoundor, mockNonfungiblePositionManager);
     keep3r = job.keep3r();
 
     // mock whiteList
@@ -68,7 +68,7 @@ contract Base is DSTestPlus {
   }
 }
 
-contract UnitCompoundJobWork is Base {
+contract UnitCompoundKeep3rRatedJobWork is Base {
   event Worked();
 
   function setUp() public override {
@@ -115,8 +115,8 @@ contract UnitCompoundJobWork is Base {
     uint128 reward0,
     uint128 reward1
   ) external {
-    vm.assume(reward0 > BASE);
-    vm.assume(reward1 > BASE);
+    vm.assume(reward0 > threshold0);
+    vm.assume(reward1 > threshold1);
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
     expectEmitNoIndex();
@@ -125,7 +125,7 @@ contract UnitCompoundJobWork is Base {
   }
 
   function testWorkNewIdWithToken0(uint256 tokenId, uint128 reward0) external {
-    vm.assume(reward0 > BASE);
+    vm.assume(reward0 > threshold0);
     job.addTokenWhiteListForTest(address(mockToken1), 0);
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, 0, 0, 0));
@@ -141,7 +141,7 @@ contract UnitCompoundJobWork is Base {
   }
 
   function testWorkNewIdWithToken1(uint256 tokenId, uint128 reward1) external {
-    vm.assume(reward1 > BASE);
+    vm.assume(reward1 > threshold1);
     job.addTokenWhiteListForTest(address(mockToken0), 0);
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(0, reward1, 0, 0));
@@ -161,8 +161,8 @@ contract UnitCompoundJobWork is Base {
     uint128 reward0,
     uint128 reward1
   ) external {
-    vm.assume(reward0 > BASE);
-    vm.assume(reward1 > BASE);
+    vm.assume(reward0 > threshold0);
+    vm.assume(reward1 > threshold1);
     vm.clearMockedCalls();
 
     job.addTokenIdStoredForTest(tokenId, address(mockToken0), address(mockToken1));
@@ -175,7 +175,7 @@ contract UnitCompoundJobWork is Base {
   }
 }
 
-contract UnitCompoundJobWorkForFree is Base {
+contract UnitCompoundKeep3rRatedJobWorkForFree is Base {
   event Worked();
 
   function setUp() public override {
@@ -215,8 +215,8 @@ contract UnitCompoundJobWorkForFree is Base {
     uint128 reward0,
     uint128 reward1
   ) external {
-    vm.assume(reward0 > BASE);
-    vm.assume(reward1 > BASE);
+    vm.assume(reward0 > threshold0);
+    vm.assume(reward1 > threshold1);
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
     expectEmitNoIndex();
@@ -225,7 +225,7 @@ contract UnitCompoundJobWorkForFree is Base {
   }
 
   function testWorkForFreeNewIdWithToken0(uint256 tokenId, uint128 reward0) external {
-    vm.assume(reward0 > BASE);
+    vm.assume(reward0 > threshold0);
     job.addTokenWhiteListForTest(address(mockToken1), 0);
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, 0, 0, 0));
@@ -261,8 +261,8 @@ contract UnitCompoundJobWorkForFree is Base {
     uint128 reward0,
     uint128 reward1
   ) external {
-    vm.assume(reward0 > BASE);
-    vm.assume(reward1 > BASE);
+    vm.assume(reward0 > threshold0);
+    vm.assume(reward1 > threshold1);
     vm.clearMockedCalls();
 
     job.addTokenIdStoredForTest(tokenId, address(mockToken0), address(mockToken1));
@@ -275,7 +275,7 @@ contract UnitCompoundJobWorkForFree is Base {
   }
 }
 
-contract UnitCompoundJobSetCompoundor is Base {
+contract UnitCompoundKeep3rRatedJobSetCompoundor is Base {
   event CompoundorSetted(ICompoundor compoundor);
 
   function testRevertIfNotGovernance(ICompoundor compoundor) public {
@@ -299,7 +299,7 @@ contract UnitCompoundJobSetCompoundor is Base {
   }
 }
 
-contract UnitCompoundJobSetNonfungiblePositionManager is Base {
+contract UnitCompoundKeep3rRatedJobSetNonfungiblePositionManager is Base {
   event NonfungiblePositionManagerSetted(INonfungiblePositionManager nonfungiblePositionManager);
 
   function testRevertIfNotGovernance(INonfungiblePositionManager nonfungiblePositionManager) public {
@@ -323,26 +323,46 @@ contract UnitCompoundJobSetNonfungiblePositionManager is Base {
   }
 }
 
-contract UnitCompoundJobAddTokenToWhiteList is Base {
+contract UnitCompoundKeep3rRatedJobAddTokenToWhiteList is Base {
   event TokenAddedToWhiteList(address token, uint256 threshold);
 
-  function testRevertIfNotGovernance(address token, uint256 threshold) public {
+  function testRevertIfNotGovernance(address[] calldata tokens, uint256[] calldata thresholds) public {
     vm.expectRevert(abi.encodeWithSelector(IGovernable.OnlyGovernance.selector));
-    job.addTokenToWhiteList(token, threshold);
+    job.addTokenToWhiteList(tokens, thresholds);
   }
 
-  function testSetMultiplier(address token, uint256 threshold) external {
+  function testAddTokenToWhiteList(address[] calldata tokens, uint256[] calldata thresholds) external {
+    vm.assume(tokens.length < 5 && thresholds.length > 4);
     vm.prank(governance);
-    job.addTokenToWhiteList(token, threshold);
+    job.addTokenToWhiteList(tokens, thresholds);
 
-    assertEq(threshold, job.whiteList(token));
+    for (uint256 i; i < tokens.length; ++i) {
+      assertEq(thresholds[i], job.whiteList(tokens[i]));
+    }
   }
 
-  function testEmitCollectMultiplier(address token, uint256 threshold) external {
+  function testEmitTokenAddedToWhiteList(address[] calldata tokens, uint256[] calldata thresholds) external {
+    vm.assume(tokens.length < 5 && tokens.length > 0 && thresholds.length > 4);
     expectEmitNoIndex();
-    emit TokenAddedToWhiteList(token, threshold);
+    for (uint256 i; i < tokens.length; ++i) {
+      emit TokenAddedToWhiteList(tokens[i], thresholds[i]);
+    }
 
     vm.prank(governance);
-    job.addTokenToWhiteList(token, threshold);
+    job.addTokenToWhiteList(tokens, thresholds);
+  }
+}
+
+contract UnitCompoundKeep3rRatedJobWithdraw is Base {
+  function testWithdraw(address[] calldata tokens, uint256[] calldata balances) external {
+    vm.assume(tokens.length < 5 && balances.length > 4);
+
+    for (uint256 i; i < tokens.length; ++i) {
+      vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.accountBalances.selector), abi.encode(balances[i]));
+
+      vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.withdrawBalance.selector), abi.encode(true));
+    }
+
+    job.withdraw(tokens);
   }
 }

@@ -2,12 +2,21 @@
 pragma solidity >=0.8.4 <0.9.0;
 
 import '@contracts/utils/Pausable.sol';
-import '@interfaces/jobs/IKeep3rJob.sol';
-import 'uni-v3-periphery/libraries/OracleLibrary.sol';
+import '@interfaces/jobs/IKeep3rRatedJob.sol';
+import 'keep3r/interfaces/sidechain/IKeep3rJobWorkableRated.sol';
 
-abstract contract Keep3rJob is IKeep3rJob, Pausable {
+abstract contract Keep3rRatedJob is IKeep3rRatedJob, Pausable {
   /// @inheritdoc IKeep3rJob
-  IKeep3r public keep3r = IKeep3r(0xeb02addCfD8B773A5FFA6B9d1FE99c566f8c44CC);
+  IKeep3r public keep3r = IKeep3r(0x745a50320B6eB8FF281f1664Fc6713991661B129);
+
+  /// @inheritdoc IKeep3rRatedJob
+  uint256 public usdPerGasUnit = 1e12;
+
+  /// @inheritdoc IKeep3rRatedJob
+  function setUsdPerGasUnit(uint256 _usdPerGasUnit) public onlyGovernance {
+    usdPerGasUnit = _usdPerGasUnit;
+    emit UsdPerGasUnitSet(_usdPerGasUnit);
+  }
 
   /// @inheritdoc IKeep3rJob
   function setKeep3r(IKeep3r _keep3r) public onlyGovernance {
@@ -19,10 +28,10 @@ abstract contract Keep3rJob is IKeep3rJob, Pausable {
     @notice Checks if the sender is a valid keeper in the Keep3r network
     @param  _keeper the address to check the keeper status
    */
-  modifier upkeep(address _keeper) virtual {
+  modifier upkeep(address _keeper, uint256 _usdPerGasUnit) virtual {
     if (!_isValidKeeper(_keeper)) revert InvalidKeeper();
     _;
-    keep3r.worked(_keeper);
+    IKeep3rJobWorkableRated(address(keep3r)).worked(_keeper, _usdPerGasUnit);
   }
 
   /**

@@ -123,8 +123,14 @@ interface ICompoundJob is IKeep3rJob {
 
   /**
     @notice Sets the token that has to be whitelisted
-    @param  _token The address of the token
-    @param  _threshold The threshold
+    @param  _tokens The list of tokens
+    @param  _thresholds The list of thresholds
    */
-  function addTokenToWhiteList(address _token, uint256 _threshold) external;
+  function addTokenToWhiteList(address[] memory _tokens, uint256[] memory _thresholds) external;
+
+  /**
+    @notice Withdraws token balance for a address and token
+    @param _tokens The list of tokens
+  */
+  function withdraw(address[] calldata _tokens) external;
 }

@@ -2,10 +2,10 @@
 pragma solidity >=0.8.4 <0.9.0;
 
 import '@interfaces/jobs/ICompoundJob.sol';
-import '@contracts/jobs/Keep3rJob.sol';
 import '@contracts/utils/PRBMath.sol';
+import 'keep3r/contracts/peripherals/Governable.sol';
 
-contract CompoundJob is ICompoundJob, Keep3rJob {
+abstract contract CompoundJob is Governable, ICompoundJob {
   /// @inheritdoc ICompoundJob
   INonfungiblePositionManager public nonfungiblePositionManager;
 
@@ -33,14 +33,10 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
   }
 
   /// @inheritdoc ICompoundJob
-  function work(uint256 _tokenId) external upkeep(msg.sender) notPaused {
-    _work(_tokenId);
-  }
+  function work(uint256 _tokenId) external virtual {}
 
   /// @inheritdoc ICompoundJob
-  function workForFree(uint256 _tokenId) external {
-    _work(_tokenId);
-  }
+  function workForFree(uint256 _tokenId) external virtual {}
 
   /**
     @notice Works for the keep3r or for external user
@@ -74,9 +70,28 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
   }
 
   /// @inheritdoc ICompoundJob
-  function addTokenToWhiteList(address _token, uint256 _threshold) external onlyGovernance {
-    whiteList[_token] = _threshold;
-    emit TokenAddedToWhiteList(_token, _threshold);
+  function addTokenToWhiteList(address[] calldata _tokens, uint256[] calldata _thresholds) external onlyGovernance {
+    for (uint256 _i; _i < _tokens.length; ) {
+      whiteList[_tokens[_i]] = _thresholds[_i];
+
+      unchecked {
+        emit TokenAddedToWhiteList(_tokens[_i], _thresholds[_i]);
+        ++_i;
+      }
+    }
+  }
+
+  /// @inheritdoc ICompoundJob
+  function withdraw(address[] calldata _tokens) external {
+    uint256 _balance;
+    for (uint256 _i; _i < _tokens.length; ) {
+      _balance = compoundor.accountBalances(address(this), _tokens[_i]);
+      compoundor.withdrawBalance(_tokens[_i], governance, _balance);
+
+      unchecked {
+        ++_i;
+      }
+    }
   }
 
   /**
@@ -97,17 +112,17 @@ contract CompoundJob is ICompoundJob, Keep3rJob {
 
     // We have 2 tokens of interest
     if (_threshold0 * _threshold1 > 0) {
-      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.NONE, true, true);
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.NONE, false, true);
       (_reward0, _reward1, , ) = compoundor.autoCompound(_params);
       _reward0 = PRBMath.mulDiv(_reward0, BASE, _threshold0);
       _reward1 = PRBMath.mulDiv(_reward1, BASE, _threshold1);
       _smallCompound = BASE > (_reward0 + _reward1);
     } else if (_threshold0 > 0) {
-      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, true, true);
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, false, true);
       (_reward0, , , ) = compoundor.autoCompound(_params);
       _smallCompound = _threshold0 > _reward0 * BASE;
     } else {
-      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_1, true, true);
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_1, false, true);
       (, _reward1, , ) = compoundor.autoCompound(_params);
       _smallCompound = _threshold1 > _reward1 * BASE;
     }

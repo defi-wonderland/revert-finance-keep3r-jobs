@@ -33,9 +33,9 @@ interface IKeep3rJob is IPausable {
 
   /**
     @notice The address of the Keep3r contract
-    @return _keep3r The address of the token
+    @return The address of the token
    */
-  function keep3r() external view returns (IKeep3r _keep3r);
+  function keep3r() external view returns (IKeep3r);
 
   /*///////////////////////////////////////////////////////////////
                               LOGIC
