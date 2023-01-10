@@ -4,8 +4,11 @@ pragma solidity >=0.8.4 <0.9.0;
 import '@interfaces/jobs/ICompoundJob.sol';
 import '@contracts/utils/PRBMath.sol';
 import 'keep3r/contracts/peripherals/Governable.sol';
+import 'openzeppelin/contracts/utils/structs/EnumerableSet.sol';
 
 abstract contract CompoundJob is Governable, ICompoundJob {
+  using EnumerableSet for EnumerableSet.AddressSet;
+
   /// @inheritdoc ICompoundJob
   INonfungiblePositionManager public nonfungiblePositionManager;
 
@@ -13,7 +16,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   ICompoundor public compoundor;
 
   /// @inheritdoc ICompoundJob
-  mapping(address => uint256) public whiteList;
+  mapping(address => uint256) public whitelist;
 
   /// @inheritdoc ICompoundJob
   mapping(uint256 => idTokens) public tokenIdStored;
@@ -21,7 +24,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   /** 
     @notice The array with all tokens in the whitelist
   */
-  address[] internal whiteListTokens;
+  EnumerableSet.AddressSet internal _whitelisted;
 
   /** 
     @notice The base
@@ -55,28 +58,29 @@ abstract contract CompoundJob is Governable, ICompoundJob {
       _idTokens = idTokens(_token0, _token1);
       tokenIdStored[_tokenId] = _idTokens;
     }
-    uint256 _threshold0 = whiteList[_idTokens.token0];
-    uint256 _threshold1 = whiteList[_idTokens.token1];
-    if (_threshold0 + _threshold1 == 0) revert CompoundJob_NotWhiteList();
+    uint256 _threshold0 = whitelist[_idTokens.token0];
+    uint256 _threshold1 = whitelist[_idTokens.token1];
+    if (_threshold0 + _threshold1 == 0) revert CompoundJob_NotWhitelist();
 
     _callAutoCompound(_tokenId, _threshold0, _threshold1);
   }
 
   /// @inheritdoc ICompoundJob
-  function addTokenToWhiteList(address[] calldata _tokens, uint256[] calldata _thresholds) external onlyGovernance {
+  function addTokenToWhitelist(address[] calldata _tokens, uint256[] calldata _thresholds) external onlyGovernance {
     for (uint256 _i; _i < _tokens.length; ) {
-      whiteList[_tokens[_i]] = _thresholds[_i];
+      whitelist[_tokens[_i]] = _thresholds[_i];
+      _whitelisted.add(_tokens[_i]);
 
       unchecked {
-        emit TokenAddedToWhiteList(_tokens[_i], _thresholds[_i]);
+        emit TokenAddedToWhitelist(_tokens[_i], _thresholds[_i]);
         ++_i;
       }
     }
   }
 
   /// @inheritdoc ICompoundJob
-  function getWhiteListTokens() external view returns (address[] memory _whiteListTokens) {
-    _whiteListTokens = whiteListTokens;
+  function getWhitelistedTokens() external view returns (address[] memory _whitelistedTokens) {
+    _whitelistedTokens = _whitelisted.values();
   }
 
   /// @inheritdoc ICompoundJob

@@ -32,7 +32,7 @@ interface ICompoundJob is IKeep3rJob {
     @param  _token The new token address
     @param  _threshold The new threshold setted
   */
-  event TokenAddedToWhiteList(address _token, uint256 _threshold);
+  event TokenAddedToWhitelist(address _token, uint256 _threshold);
 
   /*///////////////////////////////////////////////////////////////
                               ERRORS
@@ -46,7 +46,7 @@ interface ICompoundJob is IKeep3rJob {
   /**
     @notice Thrown when the tokens are not in the whitelist
   */
-  error CompoundJob_NotWhiteList();
+  error CompoundJob_NotWhitelist();
 
   /*///////////////////////////////////////////////////////////////
                             STRUCTS
@@ -83,7 +83,7 @@ interface ICompoundJob is IKeep3rJob {
     @param  _token The address of the token whitelisted
     @return The treshold for the corresponding token
   */
-  function whiteList(address _token) external view returns (uint256);
+  function whitelist(address _token) external view returns (uint256);
 
   /**
     @notice Mapping which contains the tokenId and their tokens addresses
@@ -114,13 +114,13 @@ interface ICompoundJob is IKeep3rJob {
     @param  _tokens The list of tokens
     @param  _thresholds The list of thresholds
    */
-  function addTokenToWhiteList(address[] memory _tokens, uint256[] memory _thresholds) external;
+  function addTokenToWhitelist(address[] memory _tokens, uint256[] memory _thresholds) external;
 
   /**
     @notice Array which contains all tokens in the whitelist
-    @return _whiteListTokens The array with all address
+    @return _whitelistedTokens The array with all address
   */
-  function getWhiteListTokens() external view returns (address[] memory _whiteListTokens);
+  function getWhitelistedTokens() external view returns (address[] memory _whitelistedTokens);
 
   /**
     @notice Withdraws token balance for a address and token

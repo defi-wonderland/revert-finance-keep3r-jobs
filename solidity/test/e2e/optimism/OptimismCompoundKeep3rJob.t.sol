@@ -23,7 +23,7 @@ contract E2EOptimismCompoundKeep3rJob is CommonE2EBase {
     // Add tokens to the whitelist
     vm.startPrank(governance);
 
-    _addTokenToWhiteList();
+    _addTokenToWhitelist();
 
     vm.stopPrank();
 
@@ -60,7 +60,7 @@ contract E2EOptimismCompoundKeep3rJob is CommonE2EBase {
     thresholds[0] = 1 ether;
     thresholds[1] = 1 ether;
     vm.prank(governance);
-    compoundJob.addTokenToWhiteList(tokens, thresholds);
+    compoundJob.addTokenToWhitelist(tokens, thresholds);
 
     vm.expectRevert(abi.encodeWithSelector(ICompoundJob.CompoundJob_SmallCompound.selector));
 
@@ -69,12 +69,12 @@ contract E2EOptimismCompoundKeep3rJob is CommonE2EBase {
     compoundJob.work(tokenId);
   }
 
-  function _addTokenToWhiteList() internal {
+  function _addTokenToWhitelist() internal {
     tokens.push(token0);
     tokens.push(token1);
     thresholds.push(threshold);
     thresholds.push(threshold);
 
-    compoundJob.addTokenToWhiteList(tokens, thresholds);
+    compoundJob.addTokenToWhitelist(tokens, thresholds);
   }
 }
