@@ -6,7 +6,7 @@ import '@test/utils/DSTestPlus.sol';
 import '@interfaces/jobs/ICompoundJob.sol';
 
 contract CompoundKeep3rJobForTest is CompoundKeep3rJob {
-  using EnumerableSet for EnumerableSet.AddressSet;
+  using EnumerableMap for EnumerableMap.AddressToUintMap;
   address public upkeepKeeperForTest;
 
   constructor(
@@ -15,26 +15,22 @@ contract CompoundKeep3rJobForTest is CompoundKeep3rJob {
     INonfungiblePositionManager _nonfungiblePositionManager
   ) CompoundKeep3rJob(_governance, _compoundor, _nonfungiblePositionManager) {}
 
-  function addTokenWhitelistForTest(address[] calldata _tokens, uint256[] calldata _thresholds) external {
-    for (uint256 _i; _i < _tokens.length; ) {
-      whitelist[_tokens[_i]] = _thresholds[_i];
-      _whitelisted.add(_tokens[_i]);
-      unchecked {
-        ++_i;
-      }
+  function addTokenWhitelistForTest(address[] calldata tokens, uint256[] calldata thresholds) external {
+    for (uint256 _i; _i < tokens.length; ++_i) {
+      _whitelist.set(tokens[_i], thresholds[_i]);
     }
   }
 
-  function deleteTokenWhitelistForTest(address _token) external {
-    _whitelisted.remove(_token);
+  function getTokenWhitelistForTest(address token) external view returns (uint256 threshold) {
+    threshold = _whitelist.get(token);
   }
 
   function addTokenIdStoredForTest(
-    uint256 _tokenId,
+    uint256 tokenId,
     address token0,
     address token1
   ) external {
-    tokenIdStored[_tokenId] = idTokens(token0, token1);
+    tokenIdStored[tokenId] = idTokens(token0, token1);
   }
 
   function pauseForTest() external {
@@ -157,8 +153,8 @@ contract UnitCompoundKeep3rJobWork is Base {
 
     (address token0, address token1) = job.tokenIdStored(tokenId);
 
-    assertEq(job.whitelist(token0), threshold0);
-    assertEq(job.whitelist(token1), 0);
+    assertEq(job.getTokenWhitelistForTest(token0), threshold0);
+    assertEq(job.getTokenWhitelistForTest(token1), 0);
   }
 
   function testWorkNewIdWithToken1(uint256 tokenId, uint128 reward1) external {
@@ -174,8 +170,8 @@ contract UnitCompoundKeep3rJobWork is Base {
 
     (address token0, address token1) = job.tokenIdStored(tokenId);
 
-    assertEq(job.whitelist(token0), 0);
-    assertEq(job.whitelist(token1), threshold1);
+    assertEq(job.getTokenWhitelistForTest(token0), 0);
+    assertEq(job.getTokenWhitelistForTest(token1), threshold1);
   }
 
   function testWorkExistingIdToken(
@@ -260,8 +256,8 @@ contract UnitCompoundKeep3rJobWorkForFree is Base {
 
     (address token0, address token1) = job.tokenIdStored(tokenId);
 
-    assertEq(job.whitelist(token0), threshold0);
-    assertEq(job.whitelist(token1), 0);
+    assertEq(job.getTokenWhitelistForTest(token0), threshold0);
+    assertEq(job.getTokenWhitelistForTest(token1), 0);
   }
 
   function testWorkForFreeNewIdWithToken1(uint256 tokenId, uint128 reward1) external {
@@ -277,8 +273,8 @@ contract UnitCompoundKeep3rJobWorkForFree is Base {
 
     (address token0, address token1) = job.tokenIdStored(tokenId);
 
-    assertEq(job.whitelist(token0), 0);
-    assertEq(job.whitelist(token1), threshold1);
+    assertEq(job.getTokenWhitelistForTest(token0), 0);
+    assertEq(job.getTokenWhitelistForTest(token1), threshold1);
   }
 
   function testWorkForFreeExistingIdToken(
@@ -349,12 +345,6 @@ contract UnitCompoundKeep3rJobSetNonfungiblePositionManager is Base {
 }
 
 contract UnitCompoundKeep3rJobAddTokenToWhitelist is Base {
-  function setUp() public override {
-    super.setUp();
-    job.deleteTokenWhitelistForTest(address(mockToken0));
-    job.deleteTokenWhitelistForTest(address(mockToken1));
-  }
-
   event TokenAddedToWhitelist(address token, uint256 threshold);
 
   function testRevertIfNotGovernance(address[] calldata fuzzTokens, uint256[] calldata fuzzThresholds) public {
@@ -368,8 +358,7 @@ contract UnitCompoundKeep3rJobAddTokenToWhitelist is Base {
     job.addTokenToWhitelist(fuzzTokens, fuzzThresholds);
 
     for (uint256 i; i < fuzzTokens.length; ++i) {
-      assertEq(fuzzThresholds[i], job.whitelist(fuzzTokens[i]));
-      assertEq(job.getWhitelistedTokens()[i], fuzzTokens[i]);
+      assertEq(job.getTokenWhitelistForTest(fuzzTokens[i]), fuzzThresholds[i]);
     }
   }
 

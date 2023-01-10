@@ -79,13 +79,6 @@ interface ICompoundJob is IKeep3rJob {
   function nonfungiblePositionManager() external view returns (INonfungiblePositionManager);
 
   /**
-    @notice Mapping which stores the token whitelisted and its threshold
-    @param  _token The address of the token whitelisted
-    @return The treshold for the corresponding token
-  */
-  function whitelist(address _token) external view returns (uint256);
-
-  /**
     @notice Mapping which contains the tokenId and their tokens addresses
     @param  _tokenId The token id
     @return token0 The address of the token0

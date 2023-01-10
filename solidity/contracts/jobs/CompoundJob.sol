@@ -4,10 +4,10 @@ pragma solidity >=0.8.4 <0.9.0;
 import '@interfaces/jobs/ICompoundJob.sol';
 import '@contracts/utils/PRBMath.sol';
 import 'keep3r/contracts/peripherals/Governable.sol';
-import 'openzeppelin/contracts/utils/structs/EnumerableSet.sol';
+import 'openzeppelin/contracts/utils/structs/EnumerableMap.sol';
 
 abstract contract CompoundJob is Governable, ICompoundJob {
-  using EnumerableSet for EnumerableSet.AddressSet;
+  using EnumerableMap for EnumerableMap.AddressToUintMap;
 
   /// @inheritdoc ICompoundJob
   INonfungiblePositionManager public nonfungiblePositionManager;
@@ -16,15 +16,12 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   ICompoundor public compoundor;
 
   /// @inheritdoc ICompoundJob
-  mapping(address => uint256) public whitelist;
-
-  /// @inheritdoc ICompoundJob
   mapping(uint256 => idTokens) public tokenIdStored;
 
-  /** 
-    @notice The array with all tokens in the whitelist
+  /**
+    @notice Mapping which stores the token whitelisted and its threshold
   */
-  EnumerableSet.AddressSet internal _whitelisted;
+  EnumerableMap.AddressToUintMap internal _whitelist;
 
   /** 
     @notice The base
@@ -58,8 +55,8 @@ abstract contract CompoundJob is Governable, ICompoundJob {
       _idTokens = idTokens(_token0, _token1);
       tokenIdStored[_tokenId] = _idTokens;
     }
-    uint256 _threshold0 = whitelist[_idTokens.token0];
-    uint256 _threshold1 = whitelist[_idTokens.token1];
+    uint256 _threshold0 = _whitelist.get(_idTokens.token0);
+    uint256 _threshold1 = _whitelist.get(_idTokens.token1);
     if (_threshold0 + _threshold1 == 0) revert CompoundJob_NotWhitelist();
 
     _callAutoCompound(_tokenId, _threshold0, _threshold1);
@@ -68,8 +65,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   /// @inheritdoc ICompoundJob
   function addTokenToWhitelist(address[] calldata _tokens, uint256[] calldata _thresholds) external onlyGovernance {
     for (uint256 _i; _i < _tokens.length; ) {
-      whitelist[_tokens[_i]] = _thresholds[_i];
-      _whitelisted.add(_tokens[_i]);
+      _whitelist.set(_tokens[_i], _thresholds[_i]);
 
       unchecked {
         emit TokenAddedToWhitelist(_tokens[_i], _thresholds[_i]);
@@ -80,7 +76,15 @@ abstract contract CompoundJob is Governable, ICompoundJob {
 
   /// @inheritdoc ICompoundJob
   function getWhitelistedTokens() external view returns (address[] memory _whitelistedTokens) {
-    _whitelistedTokens = _whitelisted.values();
+    uint256 _length = _whitelist.length();
+    _whitelistedTokens = new address[](_length);
+    for (uint256 _i; _i < _length; ) {
+      (_whitelistedTokens[_i], ) = _whitelist.at(_i);
+
+      unchecked {
+        ++_i;
+      }
+    }
   }
 
   /// @inheritdoc ICompoundJob
