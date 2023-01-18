@@ -2465,9 +2465,9 @@ onetime@^6.0.0:
   dependencies:
     mimic-fn "^4.0.0"
 
-"openzeppelin@https://github.com/openzeppelin/openzeppelin-contracts.git#18691d1a6f56dd906c175072a97dc5ed93ab968c":
+"openzeppelin@https://github.com/openzeppelin/openzeppelin-contracts.git#88754d0b36cde4e6b1daab591058eaef449f5adb":
   version "4.8.0"
-  resolved "https://github.com/openzeppelin/openzeppelin-contracts.git#18691d1a6f56dd906c175072a97dc5ed93ab968c"
+  resolved "https://github.com/openzeppelin/openzeppelin-contracts.git#88754d0b36cde4e6b1daab591058eaef449f5adb"
 
 optionator@^0.8.2:
   version "0.8.3"
