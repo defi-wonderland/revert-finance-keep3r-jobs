@@ -91,9 +91,11 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   /// @inheritdoc ICompoundJob
   function withdraw(address[] calldata _tokens) external {
     uint256 _balance;
+    address _token;
     for (uint256 _i; _i < _tokens.length; ) {
-      _balance = compoundor.accountBalances(address(this), _tokens[_i]);
-      compoundor.withdrawBalance(_tokens[_i], governance, _balance);
+      _token = _tokens[_i];
+      _balance = compoundor.accountBalances(address(this), _token);
+      compoundor.withdrawBalance(_token, governance, _balance);
 
       unchecked {
         ++_i;
