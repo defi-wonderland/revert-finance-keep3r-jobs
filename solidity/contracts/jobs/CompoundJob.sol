@@ -64,15 +64,20 @@ abstract contract CompoundJob is Governable, ICompoundJob {
 
   /// @inheritdoc ICompoundJob
   function addTokenToWhitelist(address[] calldata _tokens, uint256[] calldata _thresholds) external onlyGovernance {
+    uint256 _threshold;
+    address _token;
     for (uint256 _i; _i < _tokens.length; ) {
-      if (_thresholds[_i] > 0) {
-        _whitelistedThresholds.set(_tokens[_i], _thresholds[_i]);
+      _threshold = _thresholds[_i];
+      _token = _tokens[_i];
+
+      if (_threshold > 0) {
+        _whitelistedThresholds.set(_token, _threshold);
       } else {
-        _whitelistedThresholds.remove(_tokens[_i]);
+        _whitelistedThresholds.remove(_token);
       }
 
       unchecked {
-        emit TokenAddedToWhitelist(_tokens[_i], _thresholds[_i]);
+        emit TokenAddedToWhitelist(_token, _threshold);
         ++_i;
       }
     }
