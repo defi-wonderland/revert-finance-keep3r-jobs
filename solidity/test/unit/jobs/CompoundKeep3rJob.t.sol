@@ -16,13 +16,21 @@ contract CompoundKeep3rJobForTest is CompoundKeep3rJob {
   ) CompoundKeep3rJob(_governance, _compoundor, _nonfungiblePositionManager) {}
 
   function addTokenWhitelistForTest(address[] calldata tokens, uint256[] calldata thresholds) external {
-    for (uint256 _i; _i < tokens.length; ++_i) {
-      _whitelist.set(tokens[_i], thresholds[_i]);
+    for (uint256 _i; _i < tokens.length; ) {
+      if (thresholds[_i] > 0) {
+        _whitelistedThresholds.set(tokens[_i], thresholds[_i]);
+      } else {
+        _whitelistedThresholds.remove(tokens[_i]);
+      }
+
+      unchecked {
+        ++_i;
+      }
     }
   }
 
   function getTokenWhitelistForTest(address token) external view returns (uint256 threshold) {
-    threshold = _whitelist.get(token);
+    threshold = _whitelistedThresholds.get(token);
   }
 
   function addTokenIdStoredForTest(
@@ -151,10 +159,9 @@ contract UnitCompoundKeep3rJobWork is Base {
     emit Worked();
     job.work(tokenId);
 
-    (address token0, address token1) = job.tokenIdStored(tokenId);
+    (address token0, ) = job.tokenIdStored(tokenId);
 
     assertEq(job.getTokenWhitelistForTest(token0), threshold0);
-    assertEq(job.getTokenWhitelistForTest(token1), 0);
   }
 
   function testWorkNewIdWithToken1(uint256 tokenId, uint128 reward1) external {
@@ -168,9 +175,8 @@ contract UnitCompoundKeep3rJobWork is Base {
     emit Worked();
     job.work(tokenId);
 
-    (address token0, address token1) = job.tokenIdStored(tokenId);
+    (, address token1) = job.tokenIdStored(tokenId);
 
-    assertEq(job.getTokenWhitelistForTest(token0), 0);
     assertEq(job.getTokenWhitelistForTest(token1), threshold1);
   }
 
@@ -254,10 +260,9 @@ contract UnitCompoundKeep3rJobWorkForFree is Base {
     emit Worked();
     job.workForFree(tokenId);
 
-    (address token0, address token1) = job.tokenIdStored(tokenId);
+    (address token0, ) = job.tokenIdStored(tokenId);
 
     assertEq(job.getTokenWhitelistForTest(token0), threshold0);
-    assertEq(job.getTokenWhitelistForTest(token1), 0);
   }
 
   function testWorkForFreeNewIdWithToken1(uint256 tokenId, uint128 reward1) external {
@@ -271,9 +276,8 @@ contract UnitCompoundKeep3rJobWorkForFree is Base {
     emit Worked();
     job.workForFree(tokenId);
 
-    (address token0, address token1) = job.tokenIdStored(tokenId);
+    (, address token1) = job.tokenIdStored(tokenId);
 
-    assertEq(job.getTokenWhitelistForTest(token0), 0);
     assertEq(job.getTokenWhitelistForTest(token1), threshold1);
   }
 

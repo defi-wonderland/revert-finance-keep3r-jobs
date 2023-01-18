@@ -21,7 +21,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   /**
     @notice Mapping which stores the token whitelisted and its threshold
   */
-  EnumerableMap.AddressToUintMap internal _whitelist;
+  EnumerableMap.AddressToUintMap internal _whitelistedThresholds;
 
   /** 
     @notice The base
@@ -55,8 +55,8 @@ abstract contract CompoundJob is Governable, ICompoundJob {
       _idTokens = idTokens(_token0, _token1);
       tokenIdStored[_tokenId] = _idTokens;
     }
-    uint256 _threshold0 = _whitelist.get(_idTokens.token0);
-    uint256 _threshold1 = _whitelist.get(_idTokens.token1);
+    (, uint256 _threshold0) = _whitelistedThresholds.tryGet(_idTokens.token0);
+    (, uint256 _threshold1) = _whitelistedThresholds.tryGet(_idTokens.token1);
     if (_threshold0 + _threshold1 == 0) revert CompoundJob_NotWhitelist();
 
     _callAutoCompound(_tokenId, _threshold0, _threshold1);
@@ -65,7 +65,11 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   /// @inheritdoc ICompoundJob
   function addTokenToWhitelist(address[] calldata _tokens, uint256[] calldata _thresholds) external onlyGovernance {
     for (uint256 _i; _i < _tokens.length; ) {
-      _whitelist.set(_tokens[_i], _thresholds[_i]);
+      if (_thresholds[_i] > 0) {
+        _whitelistedThresholds.set(_tokens[_i], _thresholds[_i]);
+      } else {
+        _whitelistedThresholds.remove(_tokens[_i]);
+      }
 
       unchecked {
         emit TokenAddedToWhitelist(_tokens[_i], _thresholds[_i]);
@@ -76,15 +80,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
 
   /// @inheritdoc ICompoundJob
   function getWhitelistedTokens() external view returns (address[] memory _whitelistedTokens) {
-    uint256 _length = _whitelist.length();
-    _whitelistedTokens = new address[](_length);
-    for (uint256 _i; _i < _length; ) {
-      (_whitelistedTokens[_i], ) = _whitelist.at(_i);
-
-      unchecked {
-        ++_i;
-      }
-    }
+    _whitelistedTokens = _whitelistedThresholds.keys();
   }
 
   /// @inheritdoc ICompoundJob
