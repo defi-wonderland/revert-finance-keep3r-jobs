@@ -364,6 +364,9 @@ contract UnitCompoundKeep3rJobAddTokenToWhitelist is Base {
     uint256 fuzzThreshold1,
     uint256 fuzzThreshold2
   ) external {
+    vm.assume(fuzzThreshold1 > 0 && fuzzThreshold2 > 0);
+    vm.assume(fuzzToken1 != fuzzToken2);
+
     addTokens.push(fuzzToken1);
     addTokens.push(fuzzToken2);
     addThresholds.push(fuzzThreshold1);
