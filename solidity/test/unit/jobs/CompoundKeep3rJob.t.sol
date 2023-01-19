@@ -350,19 +350,30 @@ contract UnitCompoundKeep3rJobSetNonfungiblePositionManager is Base {
 
 contract UnitCompoundKeep3rJobAddTokenToWhitelist is Base {
   event TokenAddedToWhitelist(address token, uint256 threshold);
+  address[] addTokens;
+  uint256[] addThresholds;
 
   function testRevertIfNotGovernance(address[] calldata fuzzTokens, uint256[] calldata fuzzThresholds) public {
     vm.expectRevert(abi.encodeWithSelector(IGovernable.OnlyGovernance.selector));
     job.addTokenToWhitelist(fuzzTokens, fuzzThresholds);
   }
 
-  function testAddTokenToWhitelist(address[] calldata fuzzTokens, uint256[] calldata fuzzThresholds) external {
-    vm.assume(fuzzTokens.length < 3 && fuzzThresholds.length > 4);
-    vm.startPrank(governance);
-    job.addTokenToWhitelist(fuzzTokens, fuzzThresholds);
+  function testAddTokenToWhitelist(
+    address fuzzToken1,
+    address fuzzToken2,
+    uint256 fuzzThreshold1,
+    uint256 fuzzThreshold2
+  ) external {
+    addTokens.push(fuzzToken1);
+    addTokens.push(fuzzToken2);
+    addThresholds.push(fuzzThreshold1);
+    addThresholds.push(fuzzThreshold2);
 
-    for (uint256 i; i < fuzzTokens.length; ++i) {
-      assertEq(job.getTokenWhitelistForTest(fuzzTokens[i]), fuzzThresholds[i]);
+    vm.startPrank(governance);
+    job.addTokenToWhitelist(addTokens, addThresholds);
+
+    for (uint256 i; i < addTokens.length; ++i) {
+      assertEq(job.getTokenWhitelistForTest(addTokens[i]), addThresholds[i]);
     }
   }
 
