@@ -26,7 +26,7 @@ jobs:
         run: |
           touch .env
           echo MAINNET_RPC="${{ secrets.MAINNET_RPC }}" >> .env
-          echo OPTIMISM_RPC="${{ secrets.MAINNET_RPC }}" >> .env
+          echo OPTIMISM_RPC="${{ secrets.OPTIMISM_RPC }}" >> .env
           echo FOUNDRY_FUZZ_RUNS=1 >> .env
           cat .env
       - name: Run E2E tests
