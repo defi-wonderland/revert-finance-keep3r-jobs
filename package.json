@@ -16,8 +16,9 @@
     "analyze": "slither .",
     "build": "yarn compile && node interfaces-exporter.js",
     "compile": "forge build",
-    "deploy": "echo 'script to do'",
     "deploy:local": "forge script -vv --ffi --optimize --optimizer-runs 200 --slow --broadcast --rpc-url http://127.0.0.1:8545 ./script/Deploy.s.sol",
+    "deploy:mainnet": "forge script -vv --ffi --optimize --optimizer-runs 200 --slow --broadcast --rpc-url http://127.0.0.1:8545 ./script/DeployMainnet.s.sol",
+    "deploy:optimism": "forge script -vv --ffi --optimize --optimizer-runs 200 --slow --broadcast --rpc-url http://127.0.0.1:8545 ./script/DeployOptimism.s.sol",
     "docs:build": "./build-docs.sh",
     "docs:run": "mdbook serve docs",
     "postinstall": "husky install",
@@ -51,7 +52,7 @@
     "ds-test": "https://github.com/dapphub/ds-test.git#9310e879db8ba3ea6d5c6489a579118fd264a3f5",
     "forge-std": "https://github.com/foundry-rs/forge-std.git#2a2ce3692b8c1523b29de3ec9d961ee9fbbc43a6",
     "keep3r-v2": "https://github.com/keep3r-network/keep3r-network-v2.git#a3b8e0f53e33297a826c98c80538a9351ed29efb",
-    "openzeppelin-solidity": "https://github.com/openzeppelin/openzeppelin-contracts.git#b159b3fee29f6c4b5468f568856a37f78de03819"
+    "openzeppelin": "https://github.com/openzeppelin/openzeppelin-contracts.git#88754d0b36cde4e6b1daab591058eaef449f5adb"
   },
   "devDependencies": {
     "@commitlint/cli": "16.1.0",

@@ -18,7 +18,6 @@ contract CommonE2EBase is DSTestPlus {
 
   CompoundJob compoundJob;
 
-  IERC20 dai = IERC20(label(0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1, 'DAI'));
   IERC20 weth = IERC20(label(0x4200000000000000000000000000000000000006, 'WETH'));
 
   ICompoundor compoundor = ICompoundor(label(0x5411894842e610C4D0F6Ed4C232DA689400f94A1, 'Compoundor'));
@@ -27,7 +26,7 @@ contract CommonE2EBase is DSTestPlus {
     INonfungiblePositionManager(label(0xC36442b4a4522E871399CD717aBDD847Ab11FE88, 'NFPM'));
 
   function setUp() public virtual {
-    vm.createSelectFork(vm.rpcUrl('optimism'), FORK_BLOCK);
+    vm.createSelectFork(vm.rpcUrl('optimism'));
 
     // Transfer WETH
     deal(address(weth), governance, userInitialBalance);
