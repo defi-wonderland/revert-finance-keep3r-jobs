@@ -18,7 +18,7 @@ contract DeployMainnet is Script {
     vm.startBroadcast(deployer);
 
     // Deploy compound Keep3r job
-    compoundKeep3rJob = new CompoundKeep3rJob(governance, compoundorMainnet, nonfungiblePositionManagerMainnet);
+    compoundKeep3rJob = new CompoundKeep3rJob(governance, nonfungiblePositionManagerMainnet);
     console.log('COMPOUND_KEEP3R_JOB:', address(compoundKeep3rJob));
 
     vm.stopBroadcast();

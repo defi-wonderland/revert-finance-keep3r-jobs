@@ -33,7 +33,7 @@ contract E2EOptimismCompoundKeep3rJob is CommonE2EBase {
   function testWorkForFree() public {
     // WorkForFree
     vm.prank(user1);
-    compoundJob.workForFree(tokenId);
+    compoundJob.workForFree(tokenId, compoundor);
 
     uint256 afterBalanceToken0 = compoundor.accountBalances(address(compoundJob), token0);
     uint256 afterBalanceToken1 = compoundor.accountBalances(address(compoundJob), token1);
@@ -46,7 +46,7 @@ contract E2EOptimismCompoundKeep3rJob is CommonE2EBase {
   function testWork() public {
     // WorkForFree
     vm.prank(keeper);
-    compoundJob.work(tokenId);
+    compoundJob.work(tokenId, compoundor);
 
     uint256 afterBalanceToken0 = compoundor.accountBalances(address(compoundJob), token0);
     uint256 afterBalanceToken1 = compoundor.accountBalances(address(compoundJob), token1);
@@ -66,7 +66,7 @@ contract E2EOptimismCompoundKeep3rJob is CommonE2EBase {
 
     // Work
     vm.prank(keeper);
-    compoundJob.work(tokenId);
+    compoundJob.work(tokenId, compoundor);
   }
 
   function _addTokenToWhitelist() internal {

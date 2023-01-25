@@ -7,13 +7,13 @@ import '@interfaces/jobs/ICompoundJob.sol';
 
 contract CompoundKeep3rRatedJobForTest is CompoundKeep3rRatedJob {
   using EnumerableMap for EnumerableMap.AddressToUintMap;
+  using EnumerableSet for EnumerableSet.AddressSet;
   address public upkeepKeeperForTest;
 
   constructor(
     address _governance,
-    ICompoundor _compoundor,
     INonfungiblePositionManager _nonfungiblePositionManager
-  ) CompoundKeep3rRatedJob(_governance, _compoundor, _nonfungiblePositionManager) {}
+  ) CompoundKeep3rRatedJob(_governance, _nonfungiblePositionManager) {}
 
   function addTokenWhitelistForTest(address[] calldata tokens, uint256[] calldata thresholds) external {
     for (uint256 _i; _i < tokens.length; ) {
@@ -33,12 +33,16 @@ contract CompoundKeep3rRatedJobForTest is CompoundKeep3rRatedJob {
     threshold = _whitelistedThresholds.get(token);
   }
 
-  function addTokenIdStoredForTest(
-    uint256 _tokenId,
+  function addTokenIdInfoForTest(
+    uint256 tokenId,
     address token0,
     address token1
   ) external {
-    tokenIdStored[_tokenId] = idTokens(token0, token1);
+    tokensIdInfo[tokenId] = tokenIdInfo(token0, token1);
+  }
+
+  function addCompoundorForTest(ICompoundor _compoundor) external {
+    _whitelistedCompoundors.add(address(_compoundor));
   }
 
   function pauseForTest() external {
@@ -78,7 +82,7 @@ contract Base is DSTestPlus {
   CompoundKeep3rRatedJobForTest job;
 
   function setUp() public virtual {
-    job = new CompoundKeep3rRatedJobForTest(governance, mockCompoundor, mockNonfungiblePositionManager);
+    job = new CompoundKeep3rRatedJobForTest(governance, mockNonfungiblePositionManager);
     keep3r = job.keep3r();
 
     tokens.push(address(mockToken0));
@@ -87,6 +91,7 @@ contract Base is DSTestPlus {
     thresholds.push(threshold1);
 
     job.addTokenWhitelistForTest(tokens, thresholds);
+    job.addCompoundorForTest(mockCompoundor);
   }
 }
 
@@ -106,7 +111,7 @@ contract UnitCompoundKeep3rRatedJobWork is Base {
     job.pauseForTest();
 
     vm.expectRevert(IPausable.Paused.selector);
-    job.work(tokenId);
+    job.work(tokenId, mockCompoundor);
   }
 
   function testRevertIfNotWhitelist(uint256 tokenId) external {
@@ -117,7 +122,7 @@ contract UnitCompoundKeep3rRatedJobWork is Base {
     job.addTokenWhitelistForTest(tokens, thresholds);
 
     vm.expectRevert(ICompoundJob.CompoundJob_NotWhitelist.selector);
-    job.work(tokenId);
+    job.work(tokenId, mockCompoundor);
   }
 
   function testRevertIfSmallCompound(
@@ -131,7 +136,7 @@ contract UnitCompoundKeep3rRatedJobWork is Base {
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
 
     vm.expectRevert(ICompoundJob.CompoundJob_SmallCompound.selector);
-    job.work(tokenId);
+    job.work(tokenId, mockCompoundor);
   }
 
   function testWorkIdWith2Tokens(
@@ -145,7 +150,7 @@ contract UnitCompoundKeep3rRatedJobWork is Base {
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
     expectEmitNoIndex();
     emit Worked();
-    job.work(tokenId);
+    job.work(tokenId, mockCompoundor);
   }
 
   function testWorkNewIdWithToken0(uint256 tokenId, uint128 reward0) external {
@@ -157,9 +162,9 @@ contract UnitCompoundKeep3rRatedJobWork is Base {
 
     expectEmitNoIndex();
     emit Worked();
-    job.work(tokenId);
+    job.work(tokenId, mockCompoundor);
 
-    (address token0, ) = job.tokenIdStored(tokenId);
+    (address token0, ) = job.tokensIdInfo(tokenId);
 
     assertEq(job.getTokenWhitelistForTest(token0), threshold0);
   }
@@ -173,9 +178,9 @@ contract UnitCompoundKeep3rRatedJobWork is Base {
 
     expectEmitNoIndex();
     emit Worked();
-    job.work(tokenId);
+    job.work(tokenId, mockCompoundor);
 
-    (, address token1) = job.tokenIdStored(tokenId);
+    (, address token1) = job.tokensIdInfo(tokenId);
 
     assertEq(job.getTokenWhitelistForTest(token1), threshold1);
   }
@@ -189,13 +194,13 @@ contract UnitCompoundKeep3rRatedJobWork is Base {
     vm.assume(reward1 > threshold1);
     vm.clearMockedCalls();
 
-    job.addTokenIdStoredForTest(tokenId, address(mockToken0), address(mockToken1));
+    job.addTokenIdInfoForTest(tokenId, address(mockToken0), address(mockToken1));
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
 
     expectEmitNoIndex();
     emit Worked();
-    job.work(tokenId);
+    job.work(tokenId, mockCompoundor);
   }
 }
 
@@ -218,7 +223,7 @@ contract UnitCompoundKeep3rRatedJobWorkForFree is Base {
     job.addTokenWhitelistForTest(tokens, thresholds);
 
     vm.expectRevert(ICompoundJob.CompoundJob_NotWhitelist.selector);
-    job.workForFree(tokenId);
+    job.workForFree(tokenId, mockCompoundor);
   }
 
   function testRevertIfSmallCompound(
@@ -232,7 +237,7 @@ contract UnitCompoundKeep3rRatedJobWorkForFree is Base {
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
 
     vm.expectRevert(ICompoundJob.CompoundJob_SmallCompound.selector);
-    job.workForFree(tokenId);
+    job.workForFree(tokenId, mockCompoundor);
   }
 
   function testWorkForFreeNewIdWith2Tokens(
@@ -246,7 +251,7 @@ contract UnitCompoundKeep3rRatedJobWorkForFree is Base {
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
     expectEmitNoIndex();
     emit Worked();
-    job.workForFree(tokenId);
+    job.workForFree(tokenId, mockCompoundor);
   }
 
   function testWorkForFreeNewIdWithToken0(uint256 tokenId, uint128 reward0) external {
@@ -258,9 +263,9 @@ contract UnitCompoundKeep3rRatedJobWorkForFree is Base {
 
     expectEmitNoIndex();
     emit Worked();
-    job.workForFree(tokenId);
+    job.workForFree(tokenId, mockCompoundor);
 
-    (address token0, ) = job.tokenIdStored(tokenId);
+    (address token0, ) = job.tokensIdInfo(tokenId);
 
     assertEq(job.getTokenWhitelistForTest(token0), threshold0);
   }
@@ -274,9 +279,9 @@ contract UnitCompoundKeep3rRatedJobWorkForFree is Base {
 
     expectEmitNoIndex();
     emit Worked();
-    job.workForFree(tokenId);
+    job.workForFree(tokenId, mockCompoundor);
 
-    (, address token1) = job.tokenIdStored(tokenId);
+    (, address token1) = job.tokensIdInfo(tokenId);
 
     assertEq(job.getTokenWhitelistForTest(token1), threshold1);
   }
@@ -290,39 +295,39 @@ contract UnitCompoundKeep3rRatedJobWorkForFree is Base {
     vm.assume(reward1 > threshold1);
     vm.clearMockedCalls();
 
-    job.addTokenIdStoredForTest(tokenId, address(mockToken0), address(mockToken1));
+    job.addTokenIdInfoForTest(tokenId, address(mockToken0), address(mockToken1));
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
 
     expectEmitNoIndex();
     emit Worked();
-    job.workForFree(tokenId);
+    job.workForFree(tokenId, mockCompoundor);
   }
 }
 
-contract UnitCompoundKeep3rRatedJobSetCompoundor is Base {
-  event CompoundorSetted(ICompoundor compoundor);
+// contract UnitCompoundKeep3rRatedJobSetCompoundor is Base {
+//   event CompoundorSetted(ICompoundor compoundor);
 
-  function testRevertIfNotGovernance(ICompoundor compoundor) public {
-    vm.expectRevert(abi.encodeWithSelector(IGovernable.OnlyGovernance.selector));
-    job.setCompoundor(compoundor);
-  }
+//   function testRevertIfNotGovernance(ICompoundor compoundor) public {
+//     vm.expectRevert(abi.encodeWithSelector(IGovernable.OnlyGovernance.selector));
+//     job.setCompoundor(compoundor);
+//   }
 
-  function testSetMultiplier(ICompoundor compoundor) external {
-    vm.prank(governance);
-    job.setCompoundor(compoundor);
+//   function testSetMultiplier(ICompoundor compoundor) external {
+//     vm.prank(governance);
+//     job.setCompoundor(compoundor);
 
-    assertEq(address(compoundor), address(job.compoundor()));
-  }
+//     assertEq(address(compoundor), address(job.compoundor()));
+//   }
 
-  function testEmitCollectMultiplier(ICompoundor compoundor) external {
-    expectEmitNoIndex();
-    emit CompoundorSetted(compoundor);
+//   function testEmitCollectMultiplier(ICompoundor compoundor) external {
+//     expectEmitNoIndex();
+//     emit CompoundorSetted(compoundor);
 
-    vm.prank(governance);
-    job.setCompoundor(compoundor);
-  }
-}
+//     vm.prank(governance);
+//     job.setCompoundor(compoundor);
+//   }
+// }
 
 contract UnitCompoundKeep3rRatedJobSetNonfungiblePositionManager is Base {
   event NonfungiblePositionManagerSetted(INonfungiblePositionManager nonfungiblePositionManager);
@@ -402,7 +407,7 @@ contract UnitCompoundKeep3rRatedJobWithdraw is Base {
       vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.withdrawBalance.selector), abi.encode(true));
     }
 
-    job.withdraw(fuzzTokens);
+    job.withdraw(fuzzTokens, mockCompoundor);
   }
 }
 
