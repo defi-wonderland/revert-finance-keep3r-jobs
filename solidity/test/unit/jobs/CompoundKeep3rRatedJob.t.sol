@@ -117,12 +117,26 @@ contract UnitCompoundKeep3rRatedJobWork is Base {
     job.work(tokenId, mockCompoundor);
   }
 
+  function testRevertIfActiveCooldown(
+    uint256 tokenId,
+    uint128 reward0,
+    uint128 reward1
+  ) external {
+    vm.assume(reward0 > threshold0);
+    vm.assume(reward1 > threshold1);
+    vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
+
+    job.work(tokenId, mockCompoundor);
+    vm.expectRevert(abi.encodeWithSelector(ICompoundKeep3rRatedJob.CompoundKeep3rRatedJob_ActiveCooldown.selector, 5 minutes));
+    job.work(tokenId, mockCompoundor);
+  }
+
   function testRevertIfCompoundorNotWhitelist(uint256 tokenId, ICompoundor compoundor) external {
     vm.expectRevert(ICompoundJob.CompoundJob_NotWhitelist.selector);
     job.work(tokenId, compoundor);
   }
 
-  function Token(uint256 tokenId) external {
+  function testRevertIfTokenNotWhitelist(uint256 tokenId) external {
     // sets thresholds to 0
     thresholds[0] = 0;
     thresholds[1] = 0;
@@ -340,6 +354,7 @@ contract UnitCompoundKeep3rRatedJobAddCompoundorToWhitelist is Base {
     job.addCompoundorToWhitelist(fuzzCompoundor);
   }
 }
+
 contract UnitCompoundKeep3rRatedJobSetNonfungiblePositionManager is Base {
   event NonfungiblePositionManagerSetted(INonfungiblePositionManager nonfungiblePositionManager);
 

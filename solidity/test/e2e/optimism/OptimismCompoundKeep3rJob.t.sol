@@ -24,7 +24,6 @@ contract E2EOptimismCompoundKeep3rJob is CommonE2EBase {
     vm.startPrank(governance);
 
     _addTokenToWhitelist();
-    
 
     vm.stopPrank();
 
