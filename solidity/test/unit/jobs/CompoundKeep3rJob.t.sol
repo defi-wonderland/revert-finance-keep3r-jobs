@@ -118,6 +118,7 @@ contract UnitCompoundKeep3rJobWork is Base {
   }
 
   function testRevertIfCompoundorNotWhitelist(uint256 tokenId, ICompoundor compoundor) external {
+    vm.assume(compoundor != mockCompoundor);
     vm.expectRevert(ICompoundJob.CompoundJob_NotWhitelist.selector);
     job.work(tokenId, compoundor);
   }
@@ -225,6 +226,7 @@ contract UnitCompoundKeep3rJobWorkForFree is Base {
   }
 
   function testRevertIfCompoundorNotWhitelist(uint256 tokenId, ICompoundor compoundor) external {
+    vm.assume(compoundor != mockCompoundor);
     vm.expectRevert(ICompoundJob.CompoundJob_NotWhitelist.selector);
     job.workForFree(tokenId, compoundor);
   }
