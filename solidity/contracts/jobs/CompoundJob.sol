@@ -32,10 +32,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   */
   uint256 public constant BASE = 10_000;
 
-  constructor(
-    address _governance,
-    INonfungiblePositionManager _nonfungiblePositionManager
-  ) payable Governable(_governance) {
+  constructor(address _governance, INonfungiblePositionManager _nonfungiblePositionManager) payable Governable(_governance) {
     nonfungiblePositionManager = _nonfungiblePositionManager;
   }
 
@@ -50,7 +47,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
     @param _tokenId The token id
   */
   function _work(uint256 _tokenId, ICompoundor _compoundor) internal {
-    if(!_whitelistedCompoundors.contains(address(_compoundor))) revert CompoundJob_NotWhitelist();
+    if (!_whitelistedCompoundors.contains(address(_compoundor))) revert CompoundJob_NotWhitelist();
     tokenIdInfo memory _infoTokenId = tokensIdInfo[_tokenId];
 
     if (_infoTokenId.token0 == address(0)) {
@@ -113,7 +110,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
     emit CompoundorAddedToWhitelist(_compoundor);
   }
 
-   /// @inheritdoc ICompoundJob
+  /// @inheritdoc ICompoundJob
   function getWhitelistedCompoundors() external view returns (address[] memory _compoundors) {
     _compoundors = _whitelistedCompoundors.values();
   }

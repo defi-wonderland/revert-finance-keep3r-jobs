@@ -10,10 +10,9 @@ contract CompoundKeep3rJobForTest is CompoundKeep3rJob {
   using EnumerableSet for EnumerableSet.AddressSet;
   address public upkeepKeeperForTest;
 
-  constructor(
-    address _governance,
-    INonfungiblePositionManager _nonfungiblePositionManager
-  ) CompoundKeep3rJob(_governance, _nonfungiblePositionManager) {}
+  constructor(address _governance, INonfungiblePositionManager _nonfungiblePositionManager)
+    CompoundKeep3rJob(_governance, _nonfungiblePositionManager)
+  {}
 
   function addTokenWhitelistForTest(address[] calldata tokens, uint256[] calldata thresholds) external {
     for (uint256 _i; _i < tokens.length; ) {
@@ -31,6 +30,10 @@ contract CompoundKeep3rJobForTest is CompoundKeep3rJob {
 
   function getTokenWhitelistForTest(address token) external view returns (uint256 threshold) {
     threshold = _whitelistedThresholds.get(token);
+  }
+
+  function getCompoundorWhitelistForTest(uint256 index) external view returns (address compoundor) {
+    compoundor = _whitelistedCompoundors.at(index);
   }
 
   function addTokenIdInfoForTest(
@@ -114,7 +117,12 @@ contract UnitCompoundKeep3rJobWork is Base {
     job.work(tokenId, mockCompoundor);
   }
 
-  function testRevertIfNotWhitelist(uint256 tokenId) external {
+  function testRevertIfCompoundorNotWhitelist(uint256 tokenId, ICompoundor compoundor) external {
+    vm.expectRevert(ICompoundJob.CompoundJob_NotWhitelist.selector);
+    job.work(tokenId, compoundor);
+  }
+
+  function testRevertIfTokenNotWhitelist(uint256 tokenId) external {
     // sets thresholds to 0
     thresholds[0] = 0;
     thresholds[1] = 0;
@@ -216,7 +224,12 @@ contract UnitCompoundKeep3rJobWorkForFree is Base {
     );
   }
 
-  function testRevertIfNotWhitelist(uint256 tokenId) external {
+  function testRevertIfCompoundorNotWhitelist(uint256 tokenId, ICompoundor compoundor) external {
+    vm.expectRevert(ICompoundJob.CompoundJob_NotWhitelist.selector);
+    job.workForFree(tokenId, compoundor);
+  }
+
+  function testRevertIfTokenNotWhitelist(uint256 tokenId) external {
     // sets thresholds to 0
     thresholds[0] = 0;
     thresholds[1] = 0;
@@ -305,29 +318,28 @@ contract UnitCompoundKeep3rJobWorkForFree is Base {
   }
 }
 
-// contract UnitCompoundKeep3rJobSetCompoundor is Base {
-//   event CompoundorSetted(ICompoundor compoundor);
+contract UnitCompoundKeep3rJobAddCompoundorToWhitelist is Base {
+  event CompoundorAddedToWhitelist(ICompoundor compoundor);
 
-//   function testRevertIfNotGovernance(ICompoundor compoundor) public {
-//     vm.expectRevert(abi.encodeWithSelector(IGovernable.OnlyGovernance.selector));
-//     job.setCompoundor(compoundor);
-//   }
+  function testRevertIfNotGovernance(ICompoundor fuzzCompoundor) public {
+    vm.expectRevert(abi.encodeWithSelector(IGovernable.OnlyGovernance.selector));
+    job.addCompoundorToWhitelist(fuzzCompoundor);
+  }
 
-//   function testSetMultiplier(ICompoundor compoundor) external {
-//     vm.prank(governance);
-//     job.setCompoundor(compoundor);
+  function testAddCompoundorToWhitelist(ICompoundor fuzzCompoundor) external {
+    vm.startPrank(governance);
+    job.addCompoundorToWhitelist(fuzzCompoundor);
 
-//     assertEq(address(compoundor), address(job.compoundor()));
-//   }
+    assertEq(job.getCompoundorWhitelistForTest(1), address(fuzzCompoundor));
+  }
 
-//   function testEmitCollectMultiplier(ICompoundor compoundor) external {
-//     expectEmitNoIndex();
-//     emit CompoundorSetted(compoundor);
+  function testEmitCompoundorAddedToWhitelist(ICompoundor fuzzCompoundor) external {
+    emit CompoundorAddedToWhitelist(fuzzCompoundor);
 
-//     vm.prank(governance);
-//     job.setCompoundor(compoundor);
-//   }
-// }
+    vm.startPrank(governance);
+    job.addCompoundorToWhitelist(fuzzCompoundor);
+  }
+}
 
 contract UnitCompoundKeep3rJobSetNonfungiblePositionManager is Base {
   event NonfungiblePositionManagerSetted(INonfungiblePositionManager nonfungiblePositionManager);

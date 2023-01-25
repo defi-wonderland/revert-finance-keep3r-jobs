@@ -105,7 +105,6 @@ interface ICompoundJob is IKeep3rJob {
   */
   function withdraw(address[] calldata _tokens, ICompoundor _compoundor) external;
 
-
   /**
     @notice Sets the token that has to be whitelisted
     @param  _tokens The list of tokens

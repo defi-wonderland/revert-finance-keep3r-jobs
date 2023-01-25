@@ -4,7 +4,7 @@ pragma solidity >=0.8.4 <0.9.0;
 import '@test/e2e/optimism/CommonOptimism.sol';
 
 contract E2EOptimismCompoundKeep3rJob is CommonE2EBase {
-  uint256 public tokenId = 223653;
+  uint256 public tokenId = 296494;
   address public token0;
   address public token1;
   address[] public tokens;
@@ -24,6 +24,7 @@ contract E2EOptimismCompoundKeep3rJob is CommonE2EBase {
     vm.startPrank(governance);
 
     _addTokenToWhitelist();
+    
 
     vm.stopPrank();
 

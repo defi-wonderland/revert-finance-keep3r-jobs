@@ -5,10 +5,10 @@ import '@contracts/jobs/CompoundJob.sol';
 import '@contracts/jobs/Keep3rRatedJob.sol';
 
 contract CompoundKeep3rRatedJob is CompoundJob, Keep3rRatedJob {
-  constructor(
-    address _governance,
-    INonfungiblePositionManager _nonfungiblePositionManager
-  ) payable CompoundJob(_governance, _nonfungiblePositionManager) {}
+  constructor(address _governance, INonfungiblePositionManager _nonfungiblePositionManager)
+    payable
+    CompoundJob(_governance, _nonfungiblePositionManager)
+  {}
 
   /// @inheritdoc ICompoundJob
   function work(uint256 _tokenId, ICompoundor _compoundor) external override upkeep(msg.sender, usdPerGasUnit) notPaused {
