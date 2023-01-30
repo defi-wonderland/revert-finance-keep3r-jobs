@@ -18,7 +18,7 @@ contract DeployOptimism is Script {
     vm.startBroadcast(deployer);
 
     // Deploy compound Keep3r rated job
-    compoundKeep3rRatedJob = new CompoundKeep3rRatedJob(governance, compoundorOptimism, nonfungiblePositionManagerOptimism);
+    compoundKeep3rRatedJob = new CompoundKeep3rRatedJob(governance, nonfungiblePositionManagerOptimism);
     console.log('COMPOUND_KEEP3R_RATED_JOB:', address(compoundKeep3rRatedJob));
 
     vm.stopBroadcast();

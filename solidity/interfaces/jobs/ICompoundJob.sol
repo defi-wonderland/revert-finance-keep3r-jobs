@@ -16,12 +16,6 @@ interface ICompoundJob is IKeep3rJob {
   event Worked();
 
   /**
-    @notice Emitted a new compoundor is set
-    @param  _compoundor The new compoundor address
-  */
-  event CompoundorSetted(ICompoundor _compoundor);
-
-  /**
     @notice Emitted a new non fungible PositionManager is set
     @param  _nonfungiblePositionManager The new non fungible PositionManager address
   */
@@ -34,6 +28,18 @@ interface ICompoundJob is IKeep3rJob {
   */
   event TokenAddedToWhitelist(address _token, uint256 _threshold);
 
+  /**
+    @notice Emitted a new compoundor is added to the whitelist
+    @param  _compoundor The new compoundor address
+  */
+  event CompoundorAddedToWhitelist(ICompoundor _compoundor);
+
+  /**
+    @notice Emitted a new compoundor is removed from the whitelist
+    @param  _compoundor The compoundor address
+  */
+  event CompoundorRemovedFromWhitelist(ICompoundor _compoundor);
+
   /*///////////////////////////////////////////////////////////////
                               ERRORS
   //////////////////////////////////////////////////////////////*/
@@ -44,7 +50,7 @@ interface ICompoundJob is IKeep3rJob {
   error CompoundJob_SmallCompound();
 
   /**
-    @notice Thrown when the tokens are not in the whitelist
+    @notice Thrown when the element is not in the whitelist
   */
   error CompoundJob_NotWhitelist();
 
@@ -57,7 +63,7 @@ interface ICompoundJob is IKeep3rJob {
     @param  token0 The address of the token0
     @param  token1 The address of the token1
    */
-  struct idTokens {
+  struct TokenIdInfo {
     address token0;
     address token1;
   }
@@ -65,12 +71,6 @@ interface ICompoundJob is IKeep3rJob {
   /*///////////////////////////////////////////////////////////////
                             VARIABLES
   //////////////////////////////////////////////////////////////*/
-
-  /**
-    @notice The address of the compoundor contract
-    @return The address of the token
-  */
-  function compoundor() external view returns (ICompoundor);
 
   /**
     @notice The address of the non fungible PositionManager contract
@@ -84,7 +84,7 @@ interface ICompoundJob is IKeep3rJob {
     @return token0 The address of the token0
     @return token1 The address of the token1
   */
-  function tokenIdStored(uint256 _tokenId) external view returns (address token0, address token1);
+  function tokensIdInfo(uint256 _tokenId) external view returns (address token0, address token1);
 
   /*///////////////////////////////////////////////////////////////
                               LOGIC
@@ -93,14 +93,23 @@ interface ICompoundJob is IKeep3rJob {
   /**
     @notice The function worked by the keeper, which will call autocompound for a given tokenId
     @param  _tokenId The token id
+    @param  _compoundor The compoundor
   */
-  function work(uint256 _tokenId) external;
+  function work(uint256 _tokenId, ICompoundor _compoundor) external;
 
   /**
     @notice The function worked by anyone, which will call autocompound for a given tokenId
     @param  _tokenId The token id
+    @param  _compoundor The compoundor
   */
-  function workForFree(uint256 _tokenId) external;
+  function workForFree(uint256 _tokenId, ICompoundor _compoundor) external;
+
+  /**
+    @notice Withdraws token balance for a address and token
+    @param _tokens The list of tokens
+    @param  _compoundor The compoundor
+  */
+  function withdraw(address[] calldata _tokens, ICompoundor _compoundor) external;
 
   /**
     @notice Sets the token that has to be whitelisted
@@ -116,16 +125,22 @@ interface ICompoundJob is IKeep3rJob {
   function getWhitelistedTokens() external view returns (address[] memory _whitelistedTokens);
 
   /**
-    @notice Withdraws token balance for a address and token
-    @param _tokens The list of tokens
-  */
-  function withdraw(address[] calldata _tokens) external;
+    @notice Sets the compoundor that has to be whitelisted
+    @param  _compoundor The compoundor
+   */
+  function addCompoundorToWhitelist(ICompoundor _compoundor) external;
 
   /**
-    @notice Sets the address of the compoundor
-    @param  _compoundor The address of the compoundor to be set
-   */
-  function setCompoundor(ICompoundor _compoundor) external;
+    @notice Removes the compoundor in the whitelist
+    @param  _compoundor The compoundor
+  */
+  function removeCompoundorFromWhitelist(ICompoundor _compoundor) external;
+
+  /**
+    @notice Array which contains all compoundors in the whitelist
+    @return _whitelistedCompoundors The array with all compoundors
+  */
+  function getWhitelistedCompoundors() external view returns (address[] memory _whitelistedCompoundors);
 
   /**
     @notice Sets the address of the non fungible PositionManager

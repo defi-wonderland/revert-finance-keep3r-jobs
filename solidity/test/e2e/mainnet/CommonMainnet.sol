@@ -38,8 +38,10 @@ contract CommonE2EBase is DSTestPlus {
     // Deploy every contract needed
     vm.startPrank(governance);
 
-    compoundJob = new CompoundKeep3rJob(governance, compoundor, nonfungiblePositionManager);
+    compoundJob = new CompoundKeep3rJob(governance, nonfungiblePositionManager);
     label(address(compoundJob), 'CompoundJob');
+
+    compoundJob.addCompoundorToWhitelist(compoundor);
 
     vm.stopPrank();
   }

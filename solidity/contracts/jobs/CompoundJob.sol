@@ -5,61 +5,76 @@ import '@interfaces/jobs/ICompoundJob.sol';
 import '@contracts/utils/PRBMath.sol';
 import 'keep3r/contracts/peripherals/Governable.sol';
 import 'openzeppelin/contracts/utils/structs/EnumerableMap.sol';
+import 'openzeppelin/contracts/utils/structs/EnumerableSet.sol';
 
 abstract contract CompoundJob is Governable, ICompoundJob {
   using EnumerableMap for EnumerableMap.AddressToUintMap;
+  using EnumerableSet for EnumerableSet.AddressSet;
 
   /// @inheritdoc ICompoundJob
   INonfungiblePositionManager public nonfungiblePositionManager;
 
   /// @inheritdoc ICompoundJob
-  ICompoundor public compoundor;
-
-  /// @inheritdoc ICompoundJob
-  mapping(uint256 => idTokens) public tokenIdStored;
+  mapping(uint256 => TokenIdInfo) public tokensIdInfo;
 
   /**
     @notice Mapping which stores the token whitelisted and its threshold
   */
   EnumerableMap.AddressToUintMap internal _whitelistedThresholds;
 
+  /**
+    @notice Array which stores the compoundors whitelisted
+  */
+  EnumerableSet.AddressSet internal _whitelistedCompoundors;
+
   /** 
     @notice The base
   */
   uint256 public constant BASE = 10_000;
 
-  constructor(
-    address _governance,
-    ICompoundor _compoundor,
-    INonfungiblePositionManager _nonfungiblePositionManager
-  ) payable Governable(_governance) {
-    compoundor = _compoundor;
+  constructor(address _governance, INonfungiblePositionManager _nonfungiblePositionManager) payable Governable(_governance) {
     nonfungiblePositionManager = _nonfungiblePositionManager;
   }
 
   /// @inheritdoc ICompoundJob
-  function work(uint256 _tokenId) external virtual {}
+  function work(uint256 _tokenId, ICompoundor _compoundor) external virtual {}
 
   /// @inheritdoc ICompoundJob
-  function workForFree(uint256 _tokenId) external virtual {}
+  function workForFree(uint256 _tokenId, ICompoundor _compoundor) external virtual {}
 
   /**
     @notice Works for the keep3r or for external user
     @param _tokenId The token id
   */
-  function _work(uint256 _tokenId) internal {
-    idTokens memory _idTokens = tokenIdStored[_tokenId];
+  function _work(uint256 _tokenId, ICompoundor _compoundor) internal {
+    if (!_whitelistedCompoundors.contains(address(_compoundor))) revert CompoundJob_NotWhitelist();
+    TokenIdInfo memory _infoTokenId = tokensIdInfo[_tokenId];
 
-    if (_idTokens.token0 == address(0)) {
+    if (_infoTokenId.token0 == address(0)) {
       (, , address _token0, address _token1, , , , , , , , ) = nonfungiblePositionManager.positions(_tokenId);
-      _idTokens = idTokens(_token0, _token1);
-      tokenIdStored[_tokenId] = _idTokens;
+      _infoTokenId = TokenIdInfo(_token0, _token1);
+      tokensIdInfo[_tokenId] = _infoTokenId;
     }
-    (, uint256 _threshold0) = _whitelistedThresholds.tryGet(_idTokens.token0);
-    (, uint256 _threshold1) = _whitelistedThresholds.tryGet(_idTokens.token1);
+    (, uint256 _threshold0) = _whitelistedThresholds.tryGet(_infoTokenId.token0);
+    (, uint256 _threshold1) = _whitelistedThresholds.tryGet(_infoTokenId.token1);
     if (_threshold0 + _threshold1 == 0) revert CompoundJob_NotWhitelist();
 
-    _callAutoCompound(_tokenId, _threshold0, _threshold1);
+    _callAutoCompound(_tokenId, _threshold0, _threshold1, _compoundor);
+  }
+
+  /// @inheritdoc ICompoundJob
+  function withdraw(address[] calldata _tokens, ICompoundor _compoundor) external {
+    uint256 _balance;
+    address _token;
+    for (uint256 _i; _i < _tokens.length; ) {
+      _token = _tokens[_i];
+      _balance = _compoundor.accountBalances(address(this), _token);
+      _compoundor.withdrawBalance(_token, governance, _balance);
+
+      unchecked {
+        ++_i;
+      }
+    }
   }
 
   /// @inheritdoc ICompoundJob
@@ -76,8 +91,8 @@ abstract contract CompoundJob is Governable, ICompoundJob {
         _whitelistedThresholds.remove(_token);
       }
 
+      emit TokenAddedToWhitelist(_token, _threshold);
       unchecked {
-        emit TokenAddedToWhitelist(_token, _threshold);
         ++_i;
       }
     }
@@ -89,24 +104,22 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   }
 
   /// @inheritdoc ICompoundJob
-  function withdraw(address[] calldata _tokens) external {
-    uint256 _balance;
-    address _token;
-    for (uint256 _i; _i < _tokens.length; ) {
-      _token = _tokens[_i];
-      _balance = compoundor.accountBalances(address(this), _token);
-      compoundor.withdrawBalance(_token, governance, _balance);
+  function addCompoundorToWhitelist(ICompoundor _compoundor) external onlyGovernance {
+    _whitelistedCompoundors.add(address(_compoundor));
 
-      unchecked {
-        ++_i;
-      }
-    }
+    emit CompoundorAddedToWhitelist(_compoundor);
   }
 
   /// @inheritdoc ICompoundJob
-  function setCompoundor(ICompoundor _compoundor) external onlyGovernance {
-    compoundor = _compoundor;
-    emit CompoundorSetted(_compoundor);
+  function removeCompoundorFromWhitelist(ICompoundor _compoundor) external onlyGovernance {
+    _whitelistedCompoundors.remove(address(_compoundor));
+
+    emit CompoundorRemovedFromWhitelist(_compoundor);
+  }
+
+  /// @inheritdoc ICompoundJob
+  function getWhitelistedCompoundors() external view returns (address[] memory _compoundors) {
+    _compoundors = _whitelistedCompoundors.values();
   }
 
   /// @inheritdoc ICompoundJob
@@ -124,7 +137,8 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   function _callAutoCompound(
     uint256 _tokenId,
     uint256 _threshold0,
-    uint256 _threshold1
+    uint256 _threshold1,
+    ICompoundor _compoundor
   ) internal {
     ICompoundor.AutoCompoundParams memory _params;
     bool _smallCompound;
@@ -134,17 +148,17 @@ abstract contract CompoundJob is Governable, ICompoundJob {
     // We have 2 tokens of interest
     if (_threshold0 * _threshold1 > 0) {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.NONE, false, true);
-      (_reward0, _reward1, , ) = compoundor.autoCompound(_params);
+      (_reward0, _reward1, , ) = _compoundor.autoCompound(_params);
       _reward0 = PRBMath.mulDiv(_reward0, BASE, _threshold0);
       _reward1 = PRBMath.mulDiv(_reward1, BASE, _threshold1);
       _smallCompound = BASE > (_reward0 + _reward1);
     } else if (_threshold0 > 0) {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, false, true);
-      (_reward0, , , ) = compoundor.autoCompound(_params);
+      (_reward0, , , ) = _compoundor.autoCompound(_params);
       _smallCompound = _threshold0 > _reward0 * BASE;
     } else {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_1, false, true);
-      (, _reward1, , ) = compoundor.autoCompound(_params);
+      (, _reward1, , ) = _compoundor.autoCompound(_params);
       _smallCompound = _threshold1 > _reward1 * BASE;
     }
 

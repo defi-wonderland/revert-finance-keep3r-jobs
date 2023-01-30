@@ -4,7 +4,7 @@ pragma solidity >=0.8.4 <0.9.0;
 import '@test/e2e/optimism/CommonOptimism.sol';
 
 contract E2EOptimismAutoCompound is CommonE2EBase {
-  uint256 tokenId = 223653;
+  uint256 tokenId = 295819;
   ICompoundor.AutoCompoundParams params;
 
   function setUp() public override {
