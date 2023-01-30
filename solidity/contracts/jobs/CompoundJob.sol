@@ -114,7 +114,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   function removeCompoundorFromWhitelist(ICompoundor _compoundor) external onlyGovernance {
     _whitelistedCompoundors.remove(address(_compoundor));
 
-  emit CompoundorRemovedFromWhitelist(_compoundor);
+    emit CompoundorRemovedFromWhitelist(_compoundor);
   }
 
   /// @inheritdoc ICompoundJob
