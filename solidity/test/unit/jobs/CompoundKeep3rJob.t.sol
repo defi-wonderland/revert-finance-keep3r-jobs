@@ -41,7 +41,7 @@ contract CompoundKeep3rJobForTest is CompoundKeep3rJob {
     address token0,
     address token1
   ) external {
-    tokensIdInfo[tokenId] = tokenIdInfo(token0, token1);
+    tokensIdInfo[tokenId] = TokenIdInfo(token0, token1);
   }
 
   function addCompoundorForTest(ICompoundor _compoundor) external {
@@ -340,6 +340,29 @@ contract UnitCompoundKeep3rJobAddCompoundorToWhitelist is Base {
 
     vm.startPrank(governance);
     job.addCompoundorToWhitelist(fuzzCompoundor);
+  }
+}
+
+contract UnitCompoundKeep3rJobRemoveCompoundorFromWhitelist is Base {
+  event CompoundorRemovedFromWhitelist(ICompoundor compoundor);
+
+  function testRevertIfNotGovernance(ICompoundor fuzzCompoundor) public {
+    vm.expectRevert(abi.encodeWithSelector(IGovernable.OnlyGovernance.selector));
+    job.removeCompoundorFromWhitelist(fuzzCompoundor);
+  }
+
+  function testRemoveCompoundorFromWhitelist() external {
+    vm.startPrank(governance);
+    job.removeCompoundorFromWhitelist(mockCompoundor);
+
+    assertEq(job.getWhitelistedCompoundors().length, 0);
+  }
+
+  function testEmitCompoundorAddedToWhitelist() external {
+    emit CompoundorRemovedFromWhitelist(mockCompoundor);
+
+    vm.startPrank(governance);
+    job.removeCompoundorFromWhitelist(mockCompoundor);
   }
 }
 

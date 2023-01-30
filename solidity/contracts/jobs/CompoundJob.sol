@@ -15,7 +15,7 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   INonfungiblePositionManager public nonfungiblePositionManager;
 
   /// @inheritdoc ICompoundJob
-  mapping(uint256 => tokenIdInfo) public tokensIdInfo;
+  mapping(uint256 => TokenIdInfo) public tokensIdInfo;
 
   /**
     @notice Mapping which stores the token whitelisted and its threshold
@@ -48,11 +48,11 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   */
   function _work(uint256 _tokenId, ICompoundor _compoundor) internal {
     if (!_whitelistedCompoundors.contains(address(_compoundor))) revert CompoundJob_NotWhitelist();
-    tokenIdInfo memory _infoTokenId = tokensIdInfo[_tokenId];
+    TokenIdInfo memory _infoTokenId = tokensIdInfo[_tokenId];
 
     if (_infoTokenId.token0 == address(0)) {
       (, , address _token0, address _token1, , , , , , , , ) = nonfungiblePositionManager.positions(_tokenId);
-      _infoTokenId = tokenIdInfo(_token0, _token1);
+      _infoTokenId = TokenIdInfo(_token0, _token1);
       tokensIdInfo[_tokenId] = _infoTokenId;
     }
     (, uint256 _threshold0) = _whitelistedThresholds.tryGet(_infoTokenId.token0);
@@ -108,6 +108,13 @@ abstract contract CompoundJob is Governable, ICompoundJob {
     _whitelistedCompoundors.add(address(_compoundor));
 
     emit CompoundorAddedToWhitelist(_compoundor);
+  }
+
+  /// @inheritdoc ICompoundJob
+  function removeCompoundorFromWhitelist(ICompoundor _compoundor) external onlyGovernance {
+    _whitelistedCompoundors.remove(address(_compoundor));
+
+  emit CompoundorRemovedFromWhitelist(_compoundor);
   }
 
   /// @inheritdoc ICompoundJob

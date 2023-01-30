@@ -34,6 +34,12 @@ interface ICompoundJob is IKeep3rJob {
   */
   event CompoundorAddedToWhitelist(ICompoundor _compoundor);
 
+  /**
+    @notice Emitted a new compoundor is removed from the whitelist
+    @param  _compoundor The compoundor address
+  */
+  event CompoundorRemovedFromWhitelist(ICompoundor _compoundor);
+
   /*///////////////////////////////////////////////////////////////
                               ERRORS
   //////////////////////////////////////////////////////////////*/
@@ -57,7 +63,7 @@ interface ICompoundJob is IKeep3rJob {
     @param  token0 The address of the token0
     @param  token1 The address of the token1
    */
-  struct tokenIdInfo {
+  struct TokenIdInfo {
     address token0;
     address token1;
   }
@@ -123,6 +129,12 @@ interface ICompoundJob is IKeep3rJob {
     @param  _compoundor The compoundor
    */
   function addCompoundorToWhitelist(ICompoundor _compoundor) external;
+
+  /**
+    @notice Removes the compoundor in the whitelist
+    @param  _compoundor The compoundor
+  */
+  function removeCompoundorFromWhitelist(ICompoundor _compoundor) external;
 
   /**
     @notice Array which contains all compoundors in the whitelist

@@ -7,12 +7,12 @@ import '@interfaces/jobs/ICompoundKeep3rRatedJob.sol';
 
 contract CompoundKeep3rRatedJob is CompoundJob, Keep3rRatedJob, ICompoundKeep3rRatedJob {
   /// inheritdoc ICompoundKeep3rRatedJob
-  mapping(uint256 => uint256) public tokenIdCooldowns;
+  mapping(uint256 => uint256) public lastWorkedAt;
 
   /**
     @notice The cooldown that has to be waited before work again
   */
-  uint256 internal constant COOLDOWN = 5 minutes;
+  uint256 internal constant _COOLDOWN = 5 minutes;
 
   constructor(address _governance, INonfungiblePositionManager _nonfungiblePositionManager)
     payable
@@ -21,10 +21,10 @@ contract CompoundKeep3rRatedJob is CompoundJob, Keep3rRatedJob, ICompoundKeep3rR
 
   /// @inheritdoc ICompoundJob
   function work(uint256 _tokenId, ICompoundor _compoundor) external override upkeep(msg.sender, usdPerGasUnit) notPaused {
-    uint256 _actualCooldown = tokenIdCooldowns[_tokenId];
+    uint256 _lastWorkedAt = lastWorkedAt[_tokenId];
     uint256 _actualTimestamp = block.timestamp;
-    if (tokenIdCooldowns[_tokenId] > _actualTimestamp) revert CompoundKeep3rRatedJob_ActiveCooldown(_actualCooldown - _actualTimestamp);
-    tokenIdCooldowns[_tokenId] = _actualTimestamp + COOLDOWN;
+    if (_lastWorkedAt > _actualTimestamp - _COOLDOWN) revert CompoundKeep3rRatedJob_ActiveCooldown(_lastWorkedAt + _COOLDOWN - _actualTimestamp);
+    lastWorkedAt[_tokenId] = _actualTimestamp;
     _work(_tokenId, _compoundor);
   }
 

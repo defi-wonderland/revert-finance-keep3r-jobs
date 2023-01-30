@@ -17,9 +17,9 @@ interface ICompoundKeep3rRatedJob {
 //////////////////////////////////////////////////////////////*/
 
   /**
-    @notice The mapping which store which cooldown has each tokenId
+    @notice The mapping which store when was worked each tokenId
     @param  _tokenId The token Id 
-    @return The cooldown
+    @return The last time worked
 */
-  function tokenIdCooldowns(uint256 _tokenId) external view returns (uint256);
+  function lastWorkedAt(uint256 _tokenId) external view returns (uint256);
 }
