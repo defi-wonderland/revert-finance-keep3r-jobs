@@ -10,7 +10,7 @@ contract E2EMainnetCompoundKeep3rJob is CommonE2EBase {
   address[] public tokens;
   uint256[] public thresholds;
 
-  uint256 threshold = 20_000;
+  uint256 threshold = 1e12;
 
   function setUp() public override {
     super.setUp();

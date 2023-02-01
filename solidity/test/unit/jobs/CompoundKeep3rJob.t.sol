@@ -66,8 +66,8 @@ contract Base is DSTestPlus {
   address governance = label(address(101), 'governance');
 
   // mock thesholds
-  uint256 threshold0 = 1_000;
-  uint256 threshold1 = 10_000;
+  uint256 threshold0 = 1e15;
+  uint256 threshold1 = 1e15;
 
   // mock tokens
   IERC20 mockToken0 = IERC20(mockContract('mockToken0'));
@@ -136,12 +136,11 @@ contract UnitCompoundKeep3rJobWork is Base {
 
   function testRevertIfSmallCompound(
     uint256 tokenId,
-    uint128 reward0,
-    uint128 reward1
+    uint256 reward0,
+    uint256 reward1
   ) external {
-    vm.assume(reward0 < threshold0 / 2);
-    vm.assume(reward1 < threshold1 / 2);
-
+    reward0 = threshold0 / 2 - 1;
+    reward1 = threshold1 / 2 - 1;
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
 
     vm.expectRevert(ICompoundJob.CompoundJob_SmallCompound.selector);
@@ -162,6 +161,16 @@ contract UnitCompoundKeep3rJobWork is Base {
     job.work(tokenId, mockCompoundor);
   }
 
+  function testRevertWorkNewIdWithToken0(uint256 tokenId, uint256 reward0) external {
+    reward0 = threshold0 - 1;
+    thresholds[1] = 0;
+    job.addTokenWhitelistForTest(tokens, thresholds);
+
+    vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, 0, 0, 0));
+    vm.expectRevert(ICompoundJob.CompoundJob_SmallCompound.selector);
+    job.work(tokenId, mockCompoundor);
+  }
+
   function testWorkNewIdWithToken0(uint256 tokenId, uint128 reward0) external {
     vm.assume(reward0 > threshold0);
     thresholds[1] = 0;
@@ -176,6 +185,16 @@ contract UnitCompoundKeep3rJobWork is Base {
     (address token0, ) = job.tokensIdInfo(tokenId);
 
     assertEq(job.getTokenWhitelistForTest(token0), threshold0);
+  }
+
+  function testRevertWorkNewIdWithToken1(uint256 tokenId, uint256 reward1) external {
+    reward1 = threshold1 - 1;
+    thresholds[0] = 0;
+    job.addTokenWhitelistForTest(tokens, thresholds);
+
+    vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward1, 0, 0, 0));
+    vm.expectRevert(ICompoundJob.CompoundJob_SmallCompound.selector);
+    job.workForFree(tokenId, mockCompoundor);
   }
 
   function testWorkNewIdWithToken1(uint256 tokenId, uint128 reward1) external {
@@ -243,11 +262,11 @@ contract UnitCompoundKeep3rJobWorkForFree is Base {
 
   function testRevertIfSmallCompound(
     uint256 tokenId,
-    uint128 reward0,
-    uint128 reward1
+    uint256 reward0,
+    uint256 reward1
   ) external {
-    vm.assume(reward0 < threshold0 / 2);
-    vm.assume(reward1 < threshold1 / 2);
+    reward0 = threshold0 / 2 - 1;
+    reward1 = threshold1 / 2 - 1;
 
     vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, reward1, 0, 0));
 
@@ -285,6 +304,16 @@ contract UnitCompoundKeep3rJobWorkForFree is Base {
     assertEq(job.getTokenWhitelistForTest(token0), threshold0);
   }
 
+  function testRevertWorkForFreeNewIdWithToken0(uint256 tokenId, uint256 reward0) external {
+    reward0 = threshold0 - 1;
+    thresholds[1] = 0;
+    job.addTokenWhitelistForTest(tokens, thresholds);
+
+    vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward0, 0, 0, 0));
+    vm.expectRevert(ICompoundJob.CompoundJob_SmallCompound.selector);
+    job.workForFree(tokenId, mockCompoundor);
+  }
+
   function testWorkForFreeNewIdWithToken1(uint256 tokenId, uint128 reward1) external {
     vm.assume(reward1 > threshold1);
     thresholds[0] = 0;
@@ -299,6 +328,16 @@ contract UnitCompoundKeep3rJobWorkForFree is Base {
     (, address token1) = job.tokensIdInfo(tokenId);
 
     assertEq(job.getTokenWhitelistForTest(token1), threshold1);
+  }
+
+  function testRevertWorkForFreeNewIdWithToken1(uint256 tokenId, uint256 reward1) external {
+    reward1 = threshold1 - 1;
+    thresholds[0] = 0;
+    job.addTokenWhitelistForTest(tokens, thresholds);
+
+    vm.mockCall(address(mockCompoundor), abi.encodeWithSelector(ICompoundor.autoCompound.selector), abi.encode(reward1, 0, 0, 0));
+    vm.expectRevert(ICompoundJob.CompoundJob_SmallCompound.selector);
+    job.workForFree(tokenId, mockCompoundor);
   }
 
   function testWorkForFreeExistingIdToken(

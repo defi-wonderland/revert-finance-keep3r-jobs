@@ -4,13 +4,13 @@ pragma solidity >=0.8.4 <0.9.0;
 import '@test/e2e/optimism/CommonOptimism.sol';
 
 contract E2EOptimismCompoundKeep3rJob is CommonE2EBase {
-  uint256 public tokenId = 295819;
+  uint256 public tokenId = 211816;
   address public token0;
   address public token1;
   address[] public tokens;
   uint256[] public thresholds;
 
-  uint256 threshold = 20_000;
+  uint256 threshold = 1e12;
 
   function setUp() public override {
     super.setUp();

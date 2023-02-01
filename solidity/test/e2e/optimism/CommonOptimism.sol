@@ -7,7 +7,7 @@ import '@contracts/jobs/CompoundKeep3rRatedJob.sol';
 import '@test/utils/DSTestPlus.sol';
 
 contract CommonE2EBase is DSTestPlus {
-  uint256 constant FORK_BLOCK = 59178017;
+  uint256 constant FORK_BLOCK = 71360840;
 
   address user1 = label(address(100), 'user1');
   address governance = label(address(102), 'governance');
@@ -26,7 +26,7 @@ contract CommonE2EBase is DSTestPlus {
     INonfungiblePositionManager(label(0xC36442b4a4522E871399CD717aBDD847Ab11FE88, 'NFPM'));
 
   function setUp() public virtual {
-    vm.createSelectFork(vm.rpcUrl('optimism'));
+    vm.createSelectFork(vm.rpcUrl('optimism'), FORK_BLOCK);
 
     // Transfer WETH
     deal(address(weth), governance, userInitialBalance);

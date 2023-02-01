@@ -155,11 +155,11 @@ abstract contract CompoundJob is Governable, ICompoundJob {
     } else if (_threshold0 > 0) {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, false, true);
       (_reward0, , , ) = _compoundor.autoCompound(_params);
-      _smallCompound = _threshold0 > _reward0 * BASE;
+      _smallCompound = _threshold0 > _reward0;
     } else {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_1, false, true);
       (, _reward1, , ) = _compoundor.autoCompound(_params);
-      _smallCompound = _threshold1 > _reward1 * BASE;
+      _smallCompound = _threshold1 > _reward1;
     }
 
     if (_smallCompound) revert CompoundJob_SmallCompound();
