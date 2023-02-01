@@ -32,3 +32,7 @@ src = './solidity/interfaces/'
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC}"
 optimism = "${OPTIMISM_RPC}"
+
+[rpc_endpoints]
+mainnet_governance = "${MAINNET_GOVERNANCE}"
+optimism_governance = "${OPTIMISM_GOVERNANCE}"
