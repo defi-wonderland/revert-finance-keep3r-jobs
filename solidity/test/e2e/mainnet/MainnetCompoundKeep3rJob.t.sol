@@ -43,8 +43,8 @@ contract E2EMainnetCompoundKeep3rJob is CommonE2EBase {
   }
 
   function testWorkRevertSmallCompound() public {
-    thresholds[0] = 1 ether;
-    thresholds[1] = 1 ether;
+    thresholds[0] = 100 ether;
+    thresholds[1] = 100 ether;
     vm.prank(governance);
     compoundJob.addTokenToWhitelist(tokens, thresholds);
 

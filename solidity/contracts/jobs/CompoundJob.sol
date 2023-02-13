@@ -142,24 +142,24 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   ) internal {
     ICompoundor.AutoCompoundParams memory _params;
     bool _smallCompound;
-    uint256 _amount0Added;
-    uint256 _amount1Added;
+    uint256 _compounded0;
+    uint256 _compounded1;
 
     // We have 2 tokens of interest
     if (_threshold0 * _threshold1 > 0) {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.NONE, false, true);
-      (, , _amount0Added, _amount1Added) = _compoundor.autoCompound(_params);
-      _amount0Added = PRBMath.mulDiv(_amount0Added, BASE, _threshold0);
-      _amount1Added = PRBMath.mulDiv(_amount1Added, BASE, _threshold1);
-      _smallCompound = BASE > (_amount0Added + _amount1Added);
+      (, , _compounded0, _compounded1) = _compoundor.autoCompound(_params);
+      _compounded0 = PRBMath.mulDiv(_compounded0, BASE, _threshold0);
+      _compounded1 = PRBMath.mulDiv(_compounded1, BASE, _threshold1);
+      _smallCompound = BASE > (_compounded0 + _compounded1);
     } else if (_threshold0 > 0) {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, false, true);
-      (, , _amount0Added, ) = _compoundor.autoCompound(_params);
-      _smallCompound = _threshold0 > _amount0Added;
+      (, , _compounded0, ) = _compoundor.autoCompound(_params);
+      _smallCompound = _threshold0 > _compounded0;
     } else {
       _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_1, false, true);
-      (, , , _amount1Added) = _compoundor.autoCompound(_params);
-      _smallCompound = _threshold1 > _amount1Added;
+      (, , , _compounded1) = _compoundor.autoCompound(_params);
+      _smallCompound = _threshold1 > _compounded1;
     }
 
     if (_smallCompound) revert CompoundJob_SmallCompound();
