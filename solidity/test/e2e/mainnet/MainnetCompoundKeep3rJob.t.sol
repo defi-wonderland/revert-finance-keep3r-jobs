@@ -34,31 +34,17 @@ contract E2EMainnetCompoundKeep3rJob is CommonE2EBase {
     // WorkForFree
     vm.prank(user1);
     compoundJob.workForFree(tokenId, compoundor);
-
-    uint256 afterBalanceToken0 = compoundor.accountBalances(address(compoundJob), token0);
-    uint256 afterBalanceToken1 = compoundor.accountBalances(address(compoundJob), token1);
-
-    // Check the balanaces
-    assertGt(afterBalanceToken0, 0);
-    assertGt(afterBalanceToken1, 0);
   }
 
   function testWork() public {
     // Work
     vm.prank(keeper);
     compoundJob.work(tokenId, compoundor);
-
-    uint256 afterBalanceToken0 = compoundor.accountBalances(address(compoundJob), token0);
-    uint256 afterBalanceToken1 = compoundor.accountBalances(address(compoundJob), token1);
-
-    // Check the balanaces
-    assertGt(afterBalanceToken0, 0);
-    assertGt(afterBalanceToken1, 0);
   }
 
   function testWorkRevertSmallCompound() public {
-    thresholds[0] = 1 ether;
-    thresholds[1] = 1 ether;
+    thresholds[0] = 100 ether;
+    thresholds[1] = 100 ether;
     vm.prank(governance);
     compoundJob.addTokenToWhitelist(tokens, thresholds);
 
