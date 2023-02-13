@@ -142,24 +142,24 @@ abstract contract CompoundJob is Governable, ICompoundJob {
   ) internal {
     ICompoundor.AutoCompoundParams memory _params;
     bool _smallCompound;
-    uint256 _reward0;
-    uint256 _reward1;
+    uint256 _amount0Added;
+    uint256 _amount1Added;
 
     // We have 2 tokens of interest
     if (_threshold0 * _threshold1 > 0) {
-      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.NONE, false, true);
-      (_reward0, _reward1, , ) = _compoundor.autoCompound(_params);
-      _reward0 = PRBMath.mulDiv(_reward0, BASE, _threshold0);
-      _reward1 = PRBMath.mulDiv(_reward1, BASE, _threshold1);
-      _smallCompound = BASE > (_reward0 + _reward1);
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.NONE, false, false);
+      (, , _amount0Added, _amount1Added) = _compoundor.autoCompound(_params);
+      _amount0Added = PRBMath.mulDiv(_amount0Added, BASE, _threshold0);
+      _amount1Added = PRBMath.mulDiv(_amount1Added, BASE, _threshold1);
+      _smallCompound = BASE > (_amount0Added + _amount1Added);
     } else if (_threshold0 > 0) {
-      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, false, true);
-      (_reward0, , , ) = _compoundor.autoCompound(_params);
-      _smallCompound = _threshold0 > _reward0;
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_0, false, false);
+      (, , _amount0Added, ) = _compoundor.autoCompound(_params);
+      _smallCompound = _threshold0 > _amount0Added;
     } else {
-      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_1, false, true);
-      (, _reward1, , ) = _compoundor.autoCompound(_params);
-      _smallCompound = _threshold1 > _reward1;
+      _params = ICompoundor.AutoCompoundParams(_tokenId, ICompoundor.RewardConversion.TOKEN_1, false, false);
+      (, , , _amount1Added) = _compoundor.autoCompound(_params);
+      _smallCompound = _threshold1 > _amount1Added;
     }
 
     if (_smallCompound) revert CompoundJob_SmallCompound();
